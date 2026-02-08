@@ -12,8 +12,7 @@ module.exports = {
         },
         {
             name: 'instaminsta-frontend',
-            script: 'serve',
-            args: '-s dist -l 3005',
+            script: 'vps-server.js',
             watch: false,
             env: {
                 NODE_ENV: 'production'

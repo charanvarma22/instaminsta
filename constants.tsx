@@ -5,7 +5,7 @@ import { NavLink, FAQItem, BlogPost } from './types';
 // Change this to your VPS IP or Domain when deploying
 export const API_BASE_URL = window.location.hostname === 'localhost'
   ? 'http://localhost:3004'
-  : 'http://instaminsta.com';
+  : '';
 
 export const NAV_LINKS: NavLink[] = [
   { name: 'Instagram Reels', path: '/reels', type: 'reels' },

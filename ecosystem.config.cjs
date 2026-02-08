@@ -12,8 +12,8 @@ module.exports = {
         },
         {
             name: 'instaminsta-frontend',
-            script: 'node_modules/vite/bin/vite.js',
-            args: '--port 3005 --host',
+            script: 'serve',
+            args: '-s dist -l 3005',
             watch: false,
             env: {
                 NODE_ENV: 'production'

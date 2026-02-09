@@ -22,8 +22,6 @@ export const TOOL_TABS = [
   { id: 'photo', label: 'Photo', icon: '🖼️', path: '/instagram-photo-downloader' },
   { id: 'stories', label: 'Stories', icon: '🕒', path: '/stories' },
   { id: 'igtv', label: 'IGTV', icon: '📺', path: '/instagram-igtv-downloader' },
-  { id: 'profile', label: 'Profile Photo', icon: '👤', path: '/profile-photo' },
-  { id: 'private', label: 'Private', icon: '🔒', path: '/private-downloader' },
 ];
 
 export const FAQS: FAQItem[] = [

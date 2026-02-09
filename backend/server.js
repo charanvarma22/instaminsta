@@ -3,53 +3,43 @@ import cors from "cors";
 import bodyParser from "body-parser";
 import axios from "axios";
 import { rateLimit } from 'express-rate-limit';
-
-// IMPORTANT: import everything, not default
 import * as resolverModule from "./resolver.js";
 import { fetchMediaByShortcode, fetchStoryByUrl, fetchIGTVByUrl, fetchProfileByUrl } from "./igApi.js";
+import blogRoutes from './routes/blogApi.js';
 
 const app = express();
-const PORT = process.env.PORT || 3003;
+const PORT = process.env.PORT || 3004; // Standardized to 3004
 
 app.use(cors());
 app.use(bodyParser.json());
 
-// Apply rate limiting to all requests
+// Mount Blog API
+app.use('/api/blog', blogRoutes);
+
+// Rate Limiting
 const limiter = rateLimit({
-    windowMs: 1 * 60 * 1000, // 1 minute
-    max: 20, // Limit each IP to 20 requests per windowMs
+    windowMs: 1 * 60 * 1000,
+    max: 60, // Increased limit for better UX
     standardHeaders: 'draft-7',
     legacyHeaders: false,
     message: { error: "Too many requests, please try again later." }
 });
-
 app.use(limiter);
 
-// Logging middleware to debug paths
+// Logging
 app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
     next();
 });
 
-// resolve function (works for named or module.exports)
-const resolver =
-    resolverModule.default ||
-    resolverModule.resolver ||
-    resolverModule.resolve ||
-    resolverModule.resolveUrl;
+const resolver = resolverModule.default || resolverModule.resolver || resolverModule.resolve || resolverModule.resolveUrl;
 
+// Legacy /resolve endpoint
 app.post("/resolve", async (req, res) => {
     try {
         const { url } = req.body;
-
-        if (!url) {
-            return res.status(400).json({ error: "URL is required" });
-        }
-
-        if (!resolver) {
-            return res.status(500).json({ error: "Resolver function not found" });
-        }
-
+        if (!url) return res.status(400).json({ error: "URL is required" });
+        if (!resolver) return res.status(500).json({ error: "Resolver not found" });
         await resolver(url, res);
     } catch (err) {
         console.error("Backend error:", err);
@@ -57,60 +47,36 @@ app.post("/resolve", async (req, res) => {
     }
 });
 
-// Compatibility route used by the frontend
+// Main Download endpoint
 app.post("/api/download", async (req, res) => {
     try {
         const { url, itemIndex } = req.body;
+        if (!url) return res.status(400).json({ error: "URL is required" });
 
-        if (!url) {
-            return res.status(400).json({ error: "URL is required" });
-        }
-
-        if (!resolver) {
-            return res.status(500).json({ error: "Resolver function not found" });
-        }
-
-        // Check if itemIndex is provided (for carousel individual items)
         if (itemIndex !== undefined && itemIndex !== null) {
-            // Fetch media to handle individual carousel item
             const match = url.match(/\/(reel|p|tv)\/([^/?]+)/);
             if (match) {
                 const shortcode = match[2];
                 const media = await fetchMediaByShortcode(shortcode);
-
                 if (media.carousel_media && media.carousel_media[itemIndex]) {
                     const item = media.carousel_media[itemIndex];
-
-                    // Download single video item
                     if (item.video_versions?.[0]) {
                         const videoUrl = item.video_versions[0].url;
                         res.setHeader("Content-Type", "video/mp4");
                         res.setHeader("Content-Disposition", `attachment; filename=carousel_${itemIndex}.mp4`);
-
                         const stream = await axios.get(videoUrl, { responseType: "stream" });
-                        return stream.data.on('error', (err) => {
-                            console.error("Stream error:", err);
-                            if (!res.headersSent) res.status(500).send("Stream error");
-                        }).pipe(res);
+                        return stream.data.pipe(res);
                     }
-
-                    // Download single image item
                     if (item.image_versions2?.candidates?.[0]) {
                         const imgUrl = item.image_versions2.candidates[0].url;
                         res.setHeader("Content-Type", "image/jpeg");
                         res.setHeader("Content-Disposition", `attachment; filename=carousel_${itemIndex}.jpg`);
-
                         const stream = await axios.get(imgUrl, { responseType: "stream" });
-                        return stream.data.on('error', (err) => {
-                            console.error("Stream error:", err);
-                            if (!res.headersSent) res.status(500).send("Stream error");
-                        }).pipe(res);
+                        return stream.data.pipe(res);
                     }
                 }
             }
         }
-
-        // Default behavior: use resolver (for full carousel as zip, single video, single image)
         await resolver(url, res);
     } catch (err) {
         console.error("Backend error:", err);
@@ -118,164 +84,86 @@ app.post("/api/download", async (req, res) => {
     }
 });
 
-// New preview endpoint - returns carousel items or media info
+// Preview endpoint
 app.post("/api/preview", async (req, res) => {
     try {
         const { url } = req.body;
+        if (!url) return res.status(400).json({ error: "URL is required" });
 
-        if (!url) {
-            return res.status(400).json({ error: "URL is required" });
-        }
-
-        // Handle stories separately (no shortcode)
+        // 1. Stories
         if (url.includes("/stories/")) {
-            // ... (existing story logic)
+            try {
+                const story = await fetchStoryByUrl(url);
+                return res.json({
+                    type: story.type || "image",
+                    items: [{ id: 0, type: story.type || "image", thumbnail: story.thumbnail || story.url, mediaUrl: story.url, shortcode: null }],
+                    shortcode: null
+                });
+            } catch (err) {
+                return res.status(500).json({ error: "Story fetch failed" });
+            }
         }
 
-        // Handle Profile Photo
+        // 2. Profile
         if (url.match(/instagram\.com\/(?!p\/|reel\/|tv\/|stories\/)([a-zA-Z0-9_\.]+)/)) {
             try {
                 const profile = await fetchProfileByUrl(url);
                 return res.json({
                     type: "image",
-                    items: [{
-                        id: 0,
-                        type: "image",
-                        thumbnail: profile.thumbnail,
-                        mediaUrl: profile.url,
-                        shortcode: null,
-                        username: profile.username
-                    }],
+                    items: [{ id: 0, type: "image", thumbnail: profile.thumbnail, mediaUrl: profile.url, shortcode: null, username: profile.username }],
                     shortcode: null
                 });
             } catch (err) {
-                console.error("❌ Profile preview error:", err);
-                return res.status(500).json({ error: err.message || "Failed to fetch profile" });
+                return res.status(500).json({ error: "Profile fetch failed" });
             }
         }
-        try {
-            const story = await fetchStoryByUrl(url);
-            if (story.type === "video") {
-                return res.json({
-                    type: "video",
-                    items: [{ id: 0, type: "video", thumbnail: story.thumbnail, mediaUrl: story.url, shortcode: null }],
-                    shortcode: null
-                });
-            }
 
+        // 3. Regular Posts
+        const match = url.match(/\/(reel|p|tv)\/([^/?]+)/);
+        if (!match) return res.status(400).json({ error: "Invalid URL" });
+        const shortcode = match[2];
+        const media = await fetchMediaByShortcode(shortcode);
+
+        if (media.carousel_media?.length > 0) {
+            const items = media.carousel_media.map((item, idx) => {
+                const isVideo = !!item.video_versions?.[0];
+                return {
+                    id: idx,
+                    type: isVideo ? "video" : "image",
+                    thumbnail: item.image_versions2?.candidates?.[0]?.url,
+                    mediaUrl: isVideo ? item.video_versions[0].url : item.image_versions2.candidates[0].url,
+                    shortcode
+                };
+            });
+            return res.json({ type: "carousel", items, shortcode });
+        }
+
+        if (media.video_versions?.[0]) {
+            return res.json({
+                type: "video",
+                items: [{ id: 0, type: "video", thumbnail: media.image_versions2?.candidates?.[0]?.url, mediaUrl: media.video_versions[0].url, shortcode }],
+                shortcode
+            });
+        }
+
+        if (media.image_versions2?.candidates?.[0]) {
             return res.json({
                 type: "image",
-                items: [{ id: 0, type: "image", thumbnail: story.thumbnail || story.url, mediaUrl: story.url, shortcode: null }],
-                shortcode: null
+                items: [{ id: 0, type: "image", thumbnail: media.image_versions2.candidates[0].url, mediaUrl: media.image_versions2.candidates[0].url, shortcode }],
+                shortcode
             });
-        } catch (err) {
-            console.error("❌ Story preview error:", err);
-            return res.status(500).json({ error: err.message || "Failed to fetch story" });
         }
+
+        return res.status(404).json({ error: "Media not found" });
+    } catch (err) {
+        console.error("Preview error:", err);
+        res.status(500).json({ error: "Failed to fetch media" });
     }
-
-        // Extract shortcode from URL for posts/reels/igtv
-        const match = url.match(/\/(reel|p|tv)\/([^/?]+)/);
-    if (!match) {
-        return res.status(400).json({ error: "Invalid Instagram URL" });
-    }
-
-    const shortcode = match[2];
-    console.log("📸 Fetching preview for shortcode:", shortcode);
-
-    const media = await fetchMediaByShortcode(shortcode);
-    console.log("✅ Media fetched, carousel_media:", !!media.carousel_media);
-
-    // Check if carousel
-    if (media.carousel_media && media.carousel_media.length > 0) {
-        const items = media.carousel_media.map((item, idx) => {
-            let thumb = null;
-            let type = "image";
-            let mediaUrl = null;
-
-            if (item.video_versions?.[0]) {
-                // For videos, try to get thumbnail and video URL
-                thumb = item.image_versions2?.candidates?.[0]?.url;
-                mediaUrl = item.video_versions[0].url;
-                type = "video";
-            } else if (item.image_versions2?.candidates?.[0]) {
-                thumb = item.image_versions2.candidates[0].url;
-                mediaUrl = thumb;
-                type = "image";
-            }
-
-            return {
-                id: idx,
-                type,
-                thumbnail: thumb,
-                mediaUrl,
-                shortcode
-            };
-        });
-
-        console.log("🎠 Returning carousel with", items.length, "items");
-        return res.json({
-            type: "carousel",
-            items,
-            shortcode
-        });
-    }
-
-    // Single video (reel or video post)
-    if (media.video_versions?.[0]) {
-        const thumb = media.image_versions2?.candidates?.[0]?.url;
-        const videoUrl = media.video_versions[0].url;
-        console.log("🎥 Returning single video");
-        return res.json({
-            type: "video",
-            items: [{
-                id: 0,
-                type: "video",
-                thumbnail: thumb,
-                mediaUrl: videoUrl,
-                shortcode
-            }],
-            shortcode
-        });
-    }
-
-    // Single image
-    if (media.image_versions2?.candidates?.[0]) {
-        const imgUrl = media.image_versions2.candidates[0].url;
-        console.log("🖼️ Returning single image");
-        return res.json({
-            type: "image",
-            items: [{
-                id: 0,
-                type: "image",
-                thumbnail: imgUrl,
-                mediaUrl: imgUrl,
-                shortcode
-            }],
-            shortcode
-        });
-    }
-
-    return res.status(400).json({ error: "No media found in response" });
-
-} catch (err) {
-    console.error("❌ Preview error:", err.message);
-    res.status(500).json({ error: err.message || "Failed to fetch media" });
-}
 });
 
-app.get("/api/health", (req, res) => {
-    res.json({ status: "ok", uptime: process.uptime(), timestamp: Date.now(), version: "2.0-secure" });
-});
-
-// Fallback health check in case Nginx strips /api
-app.get("/health", (req, res) => {
-    res.json({ status: "ok", message: "Health check reached without /api prefix" });
-});
-
-app.get("/", (req, res) => {
-    res.send("FastDL backend running");
-});
+app.get("/api/health", (req, res) => res.json({ status: "ok", version: "2.6" }));
+app.get("/health", (req, res) => res.json({ status: "ok" }));
+app.get("/", (req, res) => res.send("FastDL Backend Active"));
 
 app.listen(PORT, () => {
     console.log(`✅ Backend running at http://localhost:${PORT}`);

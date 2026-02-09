@@ -13,8 +13,6 @@ export const NAV_LINKS: NavLink[] = [
   { name: 'Instagram Photo', path: '/instagram-photo-downloader', type: 'photo' },
   { name: 'Instagram Story', path: '/stories', type: 'stories' },
   { name: 'Instagram IGTV', path: '/instagram-igtv-downloader', type: 'igtv' },
-  { name: 'Instagram Profile Photo', path: '/profile-photo', type: 'profile' },
-  { name: 'Instagram Private', path: '/private-downloader', type: 'private' },
   { name: 'Marketing Blog', path: '/blog', type: 'all' },
 ];
 

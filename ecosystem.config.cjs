@@ -2,7 +2,7 @@ module.exports = {
     apps: [
         {
             name: 'instaminsta-backend',
-            script: 'server-debug.js',
+            script: 'server.js',
             cwd: './backend',
             watch: false,
             env: {

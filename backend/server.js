@@ -9,7 +9,7 @@ import * as resolverModule from "./resolver.js";
 import { fetchMediaByShortcode, fetchStoryByUrl, fetchIGTVByUrl } from "./igApi.js";
 
 const app = express();
-const PORT = 3003;
+const PORT = process.env.PORT || 3003;
 
 app.use(cors());
 app.use(bodyParser.json());

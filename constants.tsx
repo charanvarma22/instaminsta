@@ -8,20 +8,20 @@ export const API_BASE_URL = window.location.hostname === 'localhost'
   : '';
 
 export const NAV_LINKS: NavLink[] = [
-  { name: 'Instagram Reels', path: '/reels', type: 'reels' },
-  { name: 'Instagram Video', path: '/video', type: 'video' },
-  { name: 'Instagram Photo', path: '/photo', type: 'photo' },
-  { name: 'Instagram Story', path: '/stories', type: 'stories' },
-  { name: 'Instagram IGTV', path: '/igtv', type: 'igtv' },
+  { name: 'Instagram Reels', path: '/instagram-reel-downloader', type: 'reels' },
+  { name: 'Instagram Video', path: '/instagram-post-downloader', type: 'video' },
+  { name: 'Instagram Photo', path: '/instagram-photo-downloader', type: 'photo' },
+  { name: 'Instagram Story', path: '/instagram-story-downloader', type: 'stories' },
+  { name: 'Instagram IGTV', path: '/instagram-igtv-downloader', type: 'igtv' },
   { name: 'Marketing Blog', path: '/blog', type: 'all' },
 ];
 
 export const TOOL_TABS = [
-  { id: 'reels', label: 'Reels', icon: '🎬', path: '/reels' },
-  { id: 'video', label: 'Video', icon: '📹', path: '/video' },
-  { id: 'photo', label: 'Photo', icon: '🖼️', path: '/photo' },
-  { id: 'stories', label: 'Stories', icon: '🕒', path: '/stories' },
-  { id: 'igtv', label: 'IGTV', icon: '📺', path: '/igtv' },
+  { id: 'reels', label: 'Reels', icon: '🎬', path: '/instagram-reel-downloader' },
+  { id: 'video', label: 'Video', icon: '📹', path: '/instagram-post-downloader' },
+  { id: 'photo', label: 'Photo', icon: '🖼️', path: '/instagram-photo-downloader' },
+  { id: 'stories', label: 'Stories', icon: '🕒', path: '/instagram-story-downloader' },
+  { id: 'igtv', label: 'IGTV', icon: '📺', path: '/instagram-igtv-downloader' },
 ];
 
 export const FAQS: FAQItem[] = [

@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useMemo } from 'react';
 import DownloaderTool from '../components/DownloaderTool';
 import FAQ from '../components/FAQ';
 import Features from '../components/Features';
@@ -41,13 +42,23 @@ const ToolPage: React.FC<Props> = ({ type }) => {
 
   const selected = content[type] || content.all;
   const seo = TOOL_SEO_CONTENT[type as keyof typeof TOOL_SEO_CONTENT] || TOOL_SEO_CONTENT.reels;
+  const canonical = useMemo(() => {
+    const map = {
+      reels: "/instagram-reel-downloader",
+      video: "/instagram-post-downloader",
+      photo: "/instagram-photo-downloader",
+      stories: "/instagram-story-downloader",
+      igtv: "/instagram-igtv-downloader"
+    };
+    return map[type] || "/";
+  }, [type]);
 
   return (
     <div className="bg-slate-950 min-h-screen">
       <SEO
         title={selected.title}
         description={selected.desc}
-        canonical={`/${type}`}
+        canonical={canonical}
       />
       <DownloaderTool title={selected.title} description={selected.desc} />
 

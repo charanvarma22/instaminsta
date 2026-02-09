@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
@@ -29,6 +29,17 @@ const App: React.FC = () => {
         <main className="flex-grow">
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/instagram-reel-downloader" element={<ToolPage type="reels" />} />
+            <Route path="/instagram-post-downloader" element={<ToolPage type="video" />} />
+            <Route path="/instagram-video-downloader" element={<ToolPage type="video" />} />
+            <Route path="/instagram-photo-downloader" element={<ToolPage type="photo" />} />
+            <Route path="/instagram-story-downloader" element={<ToolPage type="stories" />} />
+            <Route path="/instagram-igtv-downloader" element={<ToolPage type="igtv" />} />
+            <Route path="/instagram-reels-download" element={<ToolPage type="reels" />} />
+            <Route path="/instagram-video-download" element={<ToolPage type="video" />} />
+            <Route path="/instagram-photo-download" element={<ToolPage type="photo" />} />
+            <Route path="/instagram-story-download" element={<ToolPage type="stories" />} />
+            <Route path="/instagram-igtv-download" element={<ToolPage type="igtv" />} />
             <Route path="/reels" element={<ToolPage type="reels" />} />
             <Route path="/video" element={<ToolPage type="video" />} />
             <Route path="/photo" element={<ToolPage type="photo" />} />
@@ -39,7 +50,6 @@ const App: React.FC = () => {
             <Route path="/contact" element={<Contact />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
-            {/* Redirect any other path to home */}
             <Route path="*" element={<HomePage />} />
           </Routes>
         </main>

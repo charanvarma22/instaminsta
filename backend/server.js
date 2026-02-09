@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 import axios from "axios";
+import { rateLimit } from 'express-rate-limit';
 
 // IMPORTANT: import everything, not default
 import * as resolverModule from "./resolver.js";
@@ -12,6 +13,17 @@ const PORT = 3003;
 
 app.use(cors());
 app.use(bodyParser.json());
+
+// Apply rate limiting to all requests
+const limiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 20, // Limit each IP to 20 requests per windowMs
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    message: { error: "Too many requests, please try again later." }
+});
+
+app.use(limiter);
 
 // resolve function (works for named or module.exports)
 const resolver =
@@ -220,6 +232,10 @@ app.post("/api/preview", async (req, res) => {
         console.error("❌ Preview error:", err.message);
         res.status(500).json({ error: err.message || "Failed to fetch media" });
     }
+});
+
+app.get("/api/health", (req, res) => {
+    res.json({ status: "ok", uptime: process.uptime(), timestamp: Date.now() });
 });
 
 app.get("/", (req, res) => {

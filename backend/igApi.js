@@ -80,14 +80,40 @@ function getMediaId(shortcode) {
     return id.toString();
 }
 
+// Helper for retrying requests with exponential backoff
+async function withRetry(fn, maxRetries = 3, initialDelay = 1000) {
+    let lastError;
+    for (let i = 0; i < maxRetries; i++) {
+        try {
+            return await fn();
+        } catch (err) {
+            lastError = err;
+            const status = err.response?.status;
+
+            // Don't retry on 404 (Not Found) or 400 (Bad Request)
+            if (status === 404 || status === 400) throw err;
+
+            // Only retry on rate limits (429) or server errors (5xx) or timeouts
+            if (status === 429 || (status >= 500 && status <= 599) || err.code === 'ECONNABORTED' || err.code === 'ETIMEDOUT') {
+                const delay = initialDelay * Math.pow(2, i);
+                console.warn(`⚠️ Request failed (Status: ${status || err.code}). Retrying in ${delay}ms... (Attempt ${i + 1}/${maxRetries})`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+                continue;
+            }
+            throw err;
+        }
+    }
+    throw lastError;
+}
+
 export async function fetchMediaByShortcode(shortcode) {
     try {
-        // 1️⃣ Get media ID locally (No web request needed!)
         const mediaId = getMediaId(shortcode);
-
-        // 2️⃣ Mobile API (authenticated)
         const apiUrl = `https://i.instagram.com/api/v1/media/${mediaId}/info/`;
-        const res = await axios.get(apiUrl, { headers: mobileHeaders, timeout: 10000 });
+
+        const res = await withRetry(() =>
+            axios.get(apiUrl, { headers: mobileHeaders, timeout: 15000 })
+        );
 
         if (!res.data?.items?.[0]) {
             throw new Error("API_BLOCKED");
@@ -95,18 +121,21 @@ export async function fetchMediaByShortcode(shortcode) {
 
         return res.data.items[0];
     } catch (err) {
-
         if (err.message === "MEDIA_NOT_FOUND") {
             throw { code: "MEDIA_NOT_FOUND", message: "This post might be deleted, private, or archived" };
         }
         if (err.message === "API_BLOCKED") {
             throw { code: "API_BLOCKED", message: "Instagram API blocked - try again later or check cookies" };
         }
-        if (err.response?.status === 404) {
+        const status = err.response?.status;
+        if (status === 404) {
             throw { code: "NOT_FOUND", message: "Post not found or has been deleted" };
         }
-        if (err.code === "ECONNREFUSED") {
-            throw { code: "NETWORK", message: "Network error - check your connection" };
+        if (status === 429) {
+            throw { code: "RATE_LIMIT", message: "Instagram rate limit reached - try again later" };
+        }
+        if (err.code === "ECONNREFUSED" || err.code === "ECONNABORTED") {
+            throw { code: "NETWORK", message: "Network error or timeout - check your connection" };
         }
         throw { code: "UNKNOWN", message: err.message || "Failed to fetch media" };
     }
@@ -121,7 +150,9 @@ export async function fetchStoryByUrl(storyUrl) {
             const mediaId = idMatch[1];
             try {
                 const apiUrl = `https://i.instagram.com/api/v1/media/${mediaId}/info/`;
-                const res = await axios.get(apiUrl, { headers: mobileHeaders, timeout: 10000 });
+                const res = await withRetry(() =>
+                    axios.get(apiUrl, { headers: mobileHeaders, timeout: 15000 })
+                );
                 const item = res.data?.items?.[0];
                 if (item) {
                     if (item.video_versions && item.video_versions.length > 0) {

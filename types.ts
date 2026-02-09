@@ -1,5 +1,5 @@
 
-export type ToolType = 'all' | 'reels' | 'video' | 'photo' | 'stories' | 'igtv';
+export type ToolType = 'all' | 'reels' | 'video' | 'photo' | 'stories' | 'igtv' | 'profile' | 'private';
 
 export interface BlogPost {
   id: string;

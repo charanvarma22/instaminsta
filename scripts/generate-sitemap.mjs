@@ -17,6 +17,8 @@ const routes = [
   '/instagram-photo-download',
   '/instagram-story-download',
   '/instagram-igtv-download',
+  '/instagram-profile-photo-downloader',
+  '/instagram-private-downloader',
   '/blog',
   '/about',
   '/contact',

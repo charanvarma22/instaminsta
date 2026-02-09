@@ -48,7 +48,9 @@ const ToolPage: React.FC<Props> = ({ type }) => {
       video: "/instagram-post-downloader",
       photo: "/instagram-photo-downloader",
       stories: "/instagram-story-downloader",
-      igtv: "/instagram-igtv-downloader"
+      igtv: "/instagram-igtv-downloader",
+      profile: "/instagram-profile-photo-downloader",
+      private: "/instagram-private-downloader"
     };
     return map[type] || "/";
   }, [type]);

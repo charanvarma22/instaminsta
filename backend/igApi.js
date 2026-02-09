@@ -213,6 +213,83 @@ export async function fetchStoryByUrl(storyUrl) {
     }
 }
 
+// Profile Photo Downloader
+export async function fetchProfileByUrl(profileUrl) {
+    try {
+        // Extract username
+        // Matches: instagram.com/username/ or instagram.com/username
+        // Excludes: instagram.com/p/, /reel/, /stories/
+        const usernameMatch = profileUrl.match(/instagram\.com\/(?!p\/|reel\/|tv\/|stories\/)([a-zA-Z0-9_\.]+)/);
+        if (!usernameMatch) {
+            throw new Error("INVALID_URL");
+        }
+
+        const username = usernameMatch[1];
+        console.log(`🔍 Fetching profile for: ${username}`);
+
+        // Try 1: Web Profile Info API (Needs strict headers)
+        try {
+            const apiUrl = `https://www.instagram.com/api/v1/users/web_profile_info/?username=${username}`;
+            const res = await withRetry(() =>
+                axios.get(apiUrl, {
+                    headers: {
+                        ...webHeaders,
+                        "X-IG-App-ID": "936619743392459",
+                        "X-Requested-With": "XMLHttpRequest",
+                        "Referer": `https://www.instagram.com/${username}/`
+                    },
+                    timeout: 10000
+                })
+            );
+
+            const user = res.data?.data?.user;
+            if (user) {
+                const hdUrl = user.profile_pic_url_hd || user.profile_pic_url;
+                return {
+                    type: "image",
+                    url: hdUrl,
+                    thumbnail: user.profile_pic_url,
+                    username: user.username,
+                    is_private: user.is_private
+                };
+            }
+        } catch (apiErr) {
+            console.warn("⚠️ Web profile API failed, falling back to HTML scraping:", apiErr.message);
+        }
+
+        // Try 2: Scraping HTML (Fallback)
+        const htmlRes = await axios.get(`https://www.instagram.com/${username}/`, {
+            headers: webHeaders,
+            timeout: 10000
+        });
+
+        const html = htmlRes.data;
+
+        // Try to find HD URL in meta tags or sharedData
+        // og:image is usually 150x150 or 320x320, but better than nothing
+        const metaMatch = html.match(/<meta property="og:image" content="([^"]+)"/i);
+        if (metaMatch) {
+            const imgUrl = metaMatch[1].replace(/\\u0026/g, "&");
+            return {
+                type: "image",
+                url: imgUrl,
+                thumbnail: imgUrl,
+                username: username
+            };
+        }
+
+        throw new Error("PROFILE_NOT_FOUND");
+    } catch (err) {
+        if (err.message === "INVALID_URL") {
+            throw { code: "INVALID_URL", message: "Invalid Profile URL format" };
+        }
+        if (err.message === "PROFILE_NOT_FOUND") {
+            throw { code: "NOT_FOUND", message: "User not found" };
+        }
+        throw { code: "UNKNOWN", message: "Failed to fetch profile photo" };
+    }
+}
+
 // IGTV Video Downloader
 export async function fetchIGTVByUrl(igtvUrl) {
     try {

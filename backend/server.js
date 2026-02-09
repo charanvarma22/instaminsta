@@ -6,7 +6,7 @@ import { rateLimit } from 'express-rate-limit';
 
 // IMPORTANT: import everything, not default
 import * as resolverModule from "./resolver.js";
-import { fetchMediaByShortcode, fetchStoryByUrl, fetchIGTVByUrl } from "./igApi.js";
+import { fetchMediaByShortcode, fetchStoryByUrl, fetchIGTVByUrl, fetchProfileByUrl } from "./igApi.js";
 
 const app = express();
 const PORT = process.env.PORT || 3003;
@@ -129,115 +129,139 @@ app.post("/api/preview", async (req, res) => {
 
         // Handle stories separately (no shortcode)
         if (url.includes("/stories/")) {
-            try {
-                const story = await fetchStoryByUrl(url);
-                if (story.type === "video") {
-                    return res.json({
-                        type: "video",
-                        items: [{ id: 0, type: "video", thumbnail: story.thumbnail, mediaUrl: story.url, shortcode: null }],
-                        shortcode: null
-                    });
-                }
+            // ... (existing story logic)
+        }
 
+        // Handle Profile Photo
+        if (url.match(/instagram\.com\/(?!p\/|reel\/|tv\/|stories\/)([a-zA-Z0-9_\.]+)/)) {
+            try {
+                const profile = await fetchProfileByUrl(url);
                 return res.json({
                     type: "image",
-                    items: [{ id: 0, type: "image", thumbnail: story.thumbnail || story.url, mediaUrl: story.url, shortcode: null }],
+                    items: [{
+                        id: 0,
+                        type: "image",
+                        thumbnail: profile.thumbnail,
+                        mediaUrl: profile.url,
+                        shortcode: null,
+                        username: profile.username
+                    }],
                     shortcode: null
                 });
             } catch (err) {
-                console.error("❌ Story preview error:", err);
-                return res.status(500).json({ error: err.message || "Failed to fetch story" });
+                console.error("❌ Profile preview error:", err);
+                return res.status(500).json({ error: err.message || "Failed to fetch profile" });
             }
         }
+        try {
+            const story = await fetchStoryByUrl(url);
+            if (story.type === "video") {
+                return res.json({
+                    type: "video",
+                    items: [{ id: 0, type: "video", thumbnail: story.thumbnail, mediaUrl: story.url, shortcode: null }],
+                    shortcode: null
+                });
+            }
+
+            return res.json({
+                type: "image",
+                items: [{ id: 0, type: "image", thumbnail: story.thumbnail || story.url, mediaUrl: story.url, shortcode: null }],
+                shortcode: null
+            });
+        } catch (err) {
+            console.error("❌ Story preview error:", err);
+            return res.status(500).json({ error: err.message || "Failed to fetch story" });
+        }
+    }
 
         // Extract shortcode from URL for posts/reels/igtv
         const match = url.match(/\/(reel|p|tv)\/([^/?]+)/);
-        if (!match) {
-            return res.status(400).json({ error: "Invalid Instagram URL" });
-        }
-
-        const shortcode = match[2];
-        console.log("📸 Fetching preview for shortcode:", shortcode);
-
-        const media = await fetchMediaByShortcode(shortcode);
-        console.log("✅ Media fetched, carousel_media:", !!media.carousel_media);
-
-        // Check if carousel
-        if (media.carousel_media && media.carousel_media.length > 0) {
-            const items = media.carousel_media.map((item, idx) => {
-                let thumb = null;
-                let type = "image";
-                let mediaUrl = null;
-
-                if (item.video_versions?.[0]) {
-                    // For videos, try to get thumbnail and video URL
-                    thumb = item.image_versions2?.candidates?.[0]?.url;
-                    mediaUrl = item.video_versions[0].url;
-                    type = "video";
-                } else if (item.image_versions2?.candidates?.[0]) {
-                    thumb = item.image_versions2.candidates[0].url;
-                    mediaUrl = thumb;
-                    type = "image";
-                }
-
-                return {
-                    id: idx,
-                    type,
-                    thumbnail: thumb,
-                    mediaUrl,
-                    shortcode
-                };
-            });
-
-            console.log("🎠 Returning carousel with", items.length, "items");
-            return res.json({
-                type: "carousel",
-                items,
-                shortcode
-            });
-        }
-
-        // Single video (reel or video post)
-        if (media.video_versions?.[0]) {
-            const thumb = media.image_versions2?.candidates?.[0]?.url;
-            const videoUrl = media.video_versions[0].url;
-            console.log("🎥 Returning single video");
-            return res.json({
-                type: "video",
-                items: [{
-                    id: 0,
-                    type: "video",
-                    thumbnail: thumb,
-                    mediaUrl: videoUrl,
-                    shortcode
-                }],
-                shortcode
-            });
-        }
-
-        // Single image
-        if (media.image_versions2?.candidates?.[0]) {
-            const imgUrl = media.image_versions2.candidates[0].url;
-            console.log("🖼️ Returning single image");
-            return res.json({
-                type: "image",
-                items: [{
-                    id: 0,
-                    type: "image",
-                    thumbnail: imgUrl,
-                    mediaUrl: imgUrl,
-                    shortcode
-                }],
-                shortcode
-            });
-        }
-
-        return res.status(400).json({ error: "No media found in response" });
-
-    } catch (err) {
-        console.error("❌ Preview error:", err.message);
-        res.status(500).json({ error: err.message || "Failed to fetch media" });
+    if (!match) {
+        return res.status(400).json({ error: "Invalid Instagram URL" });
     }
+
+    const shortcode = match[2];
+    console.log("📸 Fetching preview for shortcode:", shortcode);
+
+    const media = await fetchMediaByShortcode(shortcode);
+    console.log("✅ Media fetched, carousel_media:", !!media.carousel_media);
+
+    // Check if carousel
+    if (media.carousel_media && media.carousel_media.length > 0) {
+        const items = media.carousel_media.map((item, idx) => {
+            let thumb = null;
+            let type = "image";
+            let mediaUrl = null;
+
+            if (item.video_versions?.[0]) {
+                // For videos, try to get thumbnail and video URL
+                thumb = item.image_versions2?.candidates?.[0]?.url;
+                mediaUrl = item.video_versions[0].url;
+                type = "video";
+            } else if (item.image_versions2?.candidates?.[0]) {
+                thumb = item.image_versions2.candidates[0].url;
+                mediaUrl = thumb;
+                type = "image";
+            }
+
+            return {
+                id: idx,
+                type,
+                thumbnail: thumb,
+                mediaUrl,
+                shortcode
+            };
+        });
+
+        console.log("🎠 Returning carousel with", items.length, "items");
+        return res.json({
+            type: "carousel",
+            items,
+            shortcode
+        });
+    }
+
+    // Single video (reel or video post)
+    if (media.video_versions?.[0]) {
+        const thumb = media.image_versions2?.candidates?.[0]?.url;
+        const videoUrl = media.video_versions[0].url;
+        console.log("🎥 Returning single video");
+        return res.json({
+            type: "video",
+            items: [{
+                id: 0,
+                type: "video",
+                thumbnail: thumb,
+                mediaUrl: videoUrl,
+                shortcode
+            }],
+            shortcode
+        });
+    }
+
+    // Single image
+    if (media.image_versions2?.candidates?.[0]) {
+        const imgUrl = media.image_versions2.candidates[0].url;
+        console.log("🖼️ Returning single image");
+        return res.json({
+            type: "image",
+            items: [{
+                id: 0,
+                type: "image",
+                thumbnail: imgUrl,
+                mediaUrl: imgUrl,
+                shortcode
+            }],
+            shortcode
+        });
+    }
+
+    return res.status(400).json({ error: "No media found in response" });
+
+} catch (err) {
+    console.error("❌ Preview error:", err.message);
+    res.status(500).json({ error: err.message || "Failed to fetch media" });
+}
 });
 
 app.get("/api/health", (req, res) => {

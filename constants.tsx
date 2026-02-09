@@ -9,10 +9,12 @@ export const API_BASE_URL = window.location.hostname === 'localhost'
 
 export const NAV_LINKS: NavLink[] = [
   { name: 'Instagram Reels', path: '/instagram-reel-downloader', type: 'reels' },
-  { name: 'Instagram Video', path: '/instagram-post-downloader', type: 'video' },
+  { name: 'Instagram Video', path: '/instagram-video-downloader', type: 'video' },
   { name: 'Instagram Photo', path: '/instagram-photo-downloader', type: 'photo' },
   { name: 'Instagram Story', path: '/instagram-story-downloader', type: 'stories' },
   { name: 'Instagram IGTV', path: '/instagram-igtv-downloader', type: 'igtv' },
+  { name: 'Instagram Profile Photo', path: '/instagram-profile-photo-downloader', type: 'profile' },
+  { name: 'Instagram Private', path: '/instagram-private-downloader', type: 'private' },
   { name: 'Marketing Blog', path: '/blog', type: 'all' },
 ];
 
@@ -22,6 +24,8 @@ export const TOOL_TABS = [
   { id: 'photo', label: 'Photo', icon: '🖼️', path: '/instagram-photo-downloader' },
   { id: 'stories', label: 'Stories', icon: '🕒', path: '/instagram-story-downloader' },
   { id: 'igtv', label: 'IGTV', icon: '📺', path: '/instagram-igtv-downloader' },
+  { id: 'profile', label: 'Profile Photo', icon: '👤', path: '/instagram-profile-photo-downloader' },
+  { id: 'private', label: 'Private', icon: '🔒', path: '/instagram-private-downloader' },
 ];
 
 export const FAQS: FAQItem[] = [
@@ -98,6 +102,18 @@ export const TOOL_SEO_CONTENT = {
     h2: "Download Original Quality JPEGs from Instagram",
     p1: "Instagram compresses images significantly, but our tool finds the highest-resolution original file hidden in the source. Save individual photos or download all images from a carousel post in one go.",
     p2: "Perfect for photographers, designers, and mood board creators who need uncompressed visuals. InstamInsta is the safest choice for high-res Instagram photo saving in 2026."
+  },
+  profile: {
+    title: "Full-Size Instagram Profile Photo Downloader",
+    h2: "View and Download HD Instagram Profile Pictures",
+    p1: "Curious about someone's profile picture? Our tool lets you view and download any Instagram profile picture in its original, full-size HD quality. Just enter the username and you're good to go.",
+    p2: "It's fast, anonymous, and you don't need to log in. The perfect tool for when you need to see the details."
+  },
+  private: {
+    title: "Instagram Private Video & Photo Downloader",
+    h2: "Securely Download from Private Instagram Accounts",
+    p1: "Our private downloader allows you to securely access and download photos and videos from Instagram accounts you follow, even if they are private. Your privacy and security are our top priority.",
+    p2: "The process is simple and requires authentication through a secure portal to ensure you have the necessary permissions. We never store your login information."
   },
   stories: {
     title: "Anonymous Instagram Story Saver & Viewer",

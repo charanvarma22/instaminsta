@@ -5,6 +5,7 @@ import FAQ from '../components/FAQ';
 import Features from '../components/Features';
 import { ToolType } from '../types';
 import { TOOL_SEO_CONTENT } from '../constants';
+import SEO from '../components/SEO';
 
 interface Props {
   type: ToolType;
@@ -43,8 +44,13 @@ const ToolPage: React.FC<Props> = ({ type }) => {
 
   return (
     <div className="bg-slate-950 min-h-screen">
+      <SEO
+        title={selected.title}
+        description={selected.desc}
+        canonical={`/${type}`}
+      />
       <DownloaderTool title={selected.title} description={selected.desc} />
-      
+
       {/* Specific SEO Content Block */}
       <section className="bg-slate-900/20 py-20 border-y border-slate-900">
         <div className="max-w-5xl mx-auto px-4">
@@ -54,7 +60,7 @@ const ToolPage: React.FC<Props> = ({ type }) => {
             </h2>
             <h3 className="text-xl font-bold text-slate-300 mb-8">{seo.h2}</h3>
           </div>
-          
+
           <div className="grid md:grid-cols-2 gap-12 text-slate-400 font-medium leading-relaxed">
             <p className="bg-slate-900/40 p-8 rounded-[2rem] border border-slate-800">
               {seo.p1}
@@ -67,7 +73,7 @@ const ToolPage: React.FC<Props> = ({ type }) => {
       </section>
 
       <Features />
-      
+
       {/* Technical FAQ / Guide section for ranking */}
       <section className="py-24 bg-slate-950">
         <div className="max-w-4xl mx-auto px-4">

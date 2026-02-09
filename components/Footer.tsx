@@ -17,7 +17,7 @@ const Footer: React.FC = () => {
               The fastest and safest way to download Instagram content. Free, anonymous, and high quality.
             </p>
           </div>
-          
+
           <div>
             <h4 className="text-white font-bold mb-6 text-sm uppercase tracking-widest">Tools</h4>
             <ul className="space-y-4 text-sm">
@@ -32,6 +32,7 @@ const Footer: React.FC = () => {
           <div>
             <h4 className="text-white font-bold mb-6 text-sm uppercase tracking-widest">Legal</h4>
             <ul className="space-y-4 text-sm">
+              <li><Link to="/about" className="hover:text-pink-500 transition-colors">About Us</Link></li>
               <li><Link to="/privacy" className="hover:text-pink-500 transition-colors">Privacy Policy</Link></li>
               <li><Link to="/terms" className="hover:text-pink-500 transition-colors">Terms of Service</Link></li>
               <li><Link to="/contact" className="hover:text-pink-500 transition-colors">Contact Us</Link></li>
@@ -47,7 +48,7 @@ const Footer: React.FC = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center text-xs">
           <p>© 2026 InstamInsta.com - All rights reserved.</p>
           <p className="mt-4 md:mt-0 italic">Not affiliated with Instagram or Meta Platforms, Inc.</p>

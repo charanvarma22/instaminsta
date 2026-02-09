@@ -6,6 +6,10 @@ import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
 import ToolPage from './pages/ToolPage';
 import BlogListPage from './pages/BlogListPage';
+import About from './pages/About';
+import Contact from './pages/Contact';
+import Privacy from './pages/Privacy';
+import Terms from './pages/Terms';
 
 // Scroll to top on route change
 const ScrollToTop = () => {
@@ -31,6 +35,10 @@ const App: React.FC = () => {
             <Route path="/stories" element={<ToolPage type="stories" />} />
             <Route path="/igtv" element={<ToolPage type="igtv" />} />
             <Route path="/blog" element={<BlogListPage />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
             {/* Redirect any other path to home */}
             <Route path="*" element={<HomePage />} />
           </Routes>

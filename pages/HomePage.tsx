@@ -4,12 +4,18 @@ import DownloaderTool from '../components/DownloaderTool';
 import FAQ from '../components/FAQ';
 import Features from '../components/Features';
 import BlogSection from '../components/BlogSection';
+import SEO from '../components/SEO';
 
 const HomePage: React.FC = () => {
   return (
     <div className="bg-slate-950">
-      <DownloaderTool 
-        title="Video" 
+      <SEO
+        title="Free Instagram Reels & Video Downloader"
+        description="The best 2026 Instagram downloader. Save Reels, Videos, Photos, and Stories in HD. No login required, fast and 100% free."
+        canonical="/"
+      />
+      <DownloaderTool
+        title="Video"
         description="Save your favorite Reels, Videos, and Photos instantly. The pro's choice for safe and unlimited Instagram content downloading in 2026."
       />
 
@@ -18,10 +24,10 @@ const HomePage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 text-center">
           <h2 className="text-[10px] font-black mb-12 text-slate-500 uppercase tracking-[0.4em]">Integrated With Global Standards</h2>
           <div className="flex flex-wrap justify-center gap-12 md:gap-24 items-center opacity-30 grayscale invert">
-             <span className="text-3xl font-black">CONTENTLY</span>
-             <span className="text-3xl font-black">MARKETPRO</span>
-             <span className="text-3xl font-black">SOCIALHUB</span>
-             <span className="text-3xl font-black">CREATORLAB</span>
+            <span className="text-3xl font-black">CONTENTLY</span>
+            <span className="text-3xl font-black">MARKETPRO</span>
+            <span className="text-3xl font-black">SOCIALHUB</span>
+            <span className="text-3xl font-black">CREATORLAB</span>
           </div>
         </div>
       </section>
@@ -96,7 +102,7 @@ const HomePage: React.FC = () => {
             <p className="mb-6">
               Instagram has evolved significantly, and so have the tools we use to interact with it. In 2026, content is the new currency, and <strong>InstamInsta</strong> is the vault where you can securely archive that currency. Whether you're a digital marketer needing to save ad creatives or a fan wanting to keep a personal copy of a viral reel, our platform provides the stability and speed you require.
             </p>
-            
+
             <h3 className="text-2xl font-bold text-white mt-12 mb-4">The Best Reels Downloader Online</h3>
             <p className="mb-6">
               Our <strong>Instagram Reels Downloader</strong> is specifically tuned for high-retention content. We understand that Reels are often uploaded with complex audio tracks and high-quality visuals. Our tool extracts the raw MP4 stream directly from the Instagram servers, bypassing the mobile app's native compression. This means the video you get is the highest possible quality—no blurry pixels, no audio lag.
@@ -108,8 +114,8 @@ const HomePage: React.FC = () => {
             </p>
 
             <div className="my-16 p-10 bg-slate-900/50 rounded-[3rem] border border-slate-800 text-center">
-               <h3 className="text-3xl font-black text-white mb-4 italic">"The fastest Instagram video saver I've used in years. A true life-saver for my marketing agency."</h3>
-               <p className="text-pink-500 font-bold">— Mark J., Creative Director</p>
+              <h3 className="text-3xl font-black text-white mb-4 italic">"The fastest Instagram video saver I've used in years. A true life-saver for my marketing agency."</h3>
+              <p className="text-pink-500 font-bold">— Mark J., Creative Director</p>
             </div>
 
             <h3 className="text-2xl font-bold text-white mt-12 mb-4">Save Photos, Carousels & IGTV</h3>
@@ -123,15 +129,15 @@ const HomePage: React.FC = () => {
       {/* Call to Action Section */}
       <section className="py-24 bg-slate-900/10">
         <div className="max-w-7xl mx-auto px-4">
-           <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-pink-900/20 p-12 md:p-24 rounded-[4rem] border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-12 shadow-5xl">
-              <div className="text-center md:text-left max-w-xl">
-                 <h2 className="text-4xl md:text-6xl font-black text-white mb-6 leading-tight">Join the 2026 Content Revolution</h2>
-                 <p className="text-slate-400 text-xl font-medium">Experience the fastest downloads on the web. No ads, no tracking, 100% free.</p>
-              </div>
-              <button onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})} className="bg-white text-slate-950 px-14 py-8 rounded-[2.5rem] font-black text-2xl hover:scale-105 transition-all shadow-3xl shadow-white/10 active:scale-95 whitespace-nowrap">
-                 Download Now
-              </button>
-           </div>
+          <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-pink-900/20 p-12 md:p-24 rounded-[4rem] border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-12 shadow-5xl">
+            <div className="text-center md:text-left max-w-xl">
+              <h2 className="text-4xl md:text-6xl font-black text-white mb-6 leading-tight">Join the 2026 Content Revolution</h2>
+              <p className="text-slate-400 text-xl font-medium">Experience the fastest downloads on the web. No ads, no tracking, 100% free.</p>
+            </div>
+            <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="bg-white text-slate-950 px-14 py-8 rounded-[2.5rem] font-black text-2xl hover:scale-105 transition-all shadow-3xl shadow-white/10 active:scale-95 whitespace-nowrap">
+              Download Now
+            </button>
+          </div>
         </div>
       </section>
 

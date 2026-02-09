@@ -44,13 +44,13 @@ const ToolPage: React.FC<Props> = ({ type }) => {
   const seo = TOOL_SEO_CONTENT[type as keyof typeof TOOL_SEO_CONTENT] || TOOL_SEO_CONTENT.reels;
   const canonical = useMemo(() => {
     const map = {
-      reels: "/instagram-reel-downloader",
-      video: "/instagram-post-downloader",
+      reels: "/reels",
+      video: "/instagram-video-downloader",
       photo: "/instagram-photo-downloader",
-      stories: "/instagram-story-downloader",
+      stories: "/stories",
       igtv: "/instagram-igtv-downloader",
-      profile: "/instagram-profile-photo-downloader",
-      private: "/instagram-private-downloader"
+      profile: "/profile-photo",
+      private: "/private-downloader"
     };
     return map[type] || "/";
   }, [type]);

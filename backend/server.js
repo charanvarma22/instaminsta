@@ -25,6 +25,12 @@ const limiter = rateLimit({
 
 app.use(limiter);
 
+// Logging middleware to debug paths
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    next();
+});
+
 // resolve function (works for named or module.exports)
 const resolver =
     resolverModule.default ||
@@ -235,7 +241,12 @@ app.post("/api/preview", async (req, res) => {
 });
 
 app.get("/api/health", (req, res) => {
-    res.json({ status: "ok", uptime: process.uptime(), timestamp: Date.now() });
+    res.json({ status: "ok", uptime: process.uptime(), timestamp: Date.now(), version: "2.0-secure" });
+});
+
+// Fallback health check in case Nginx strips /api
+app.get("/health", (req, res) => {
+    res.json({ status: "ok", message: "Health check reached without /api prefix" });
 });
 
 app.get("/", (req, res) => {

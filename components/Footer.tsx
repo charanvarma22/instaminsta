@@ -50,7 +50,7 @@ const Footer: React.FC = () => {
         </div>
 
         <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center text-xs">
-          <p>© 2026 InstamInsta.com - All rights reserved.</p>
+          <p>© 2026 InstamInsta.com - All rights reserved. <span className="opacity-50 text-[10px]">v2.5-REDIRECTS</span></p>
           <p className="mt-4 md:mt-0 italic">Not affiliated with Instagram or Meta Platforms, Inc.</p>
         </div>
       </div>

@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
@@ -37,18 +37,18 @@ const App: React.FC = () => {
             <Route path="/Private-downloader" element={<ToolPage type="private" />} />
             <Route path="/profile-photo" element={<ToolPage type="profile" />} />
             <Route path="/Profile-photo" element={<ToolPage type="profile" />} />
-            <Route path="/instagram-reel-downloader" element={<ToolPage type="reels" />} />
+            <Route path="/instagram-reel-downloader" element={<Navigate to="/reels" replace />} />
             <Route path="/instagram-post-downloader" element={<ToolPage type="video" />} />
             <Route path="/instagram-video-downloader" element={<ToolPage type="video" />} />
             <Route path="/instagram-photo-downloader" element={<ToolPage type="photo" />} />
-            <Route path="/instagram-story-downloader" element={<ToolPage type="stories" />} />
+            <Route path="/instagram-story-downloader" element={<Navigate to="/stories" replace />} />
             <Route path="/instagram-igtv-downloader" element={<ToolPage type="igtv" />} />
-            <Route path="/instagram-profile-photo-downloader" element={<ToolPage type="profile" />} />
-            <Route path="/instagram-private-downloader" element={<ToolPage type="private" />} />
-            <Route path="/instagram-reels-download" element={<ToolPage type="reels" />} />
+            <Route path="/instagram-profile-photo-downloader" element={<Navigate to="/profile-photo" replace />} />
+            <Route path="/instagram-private-downloader" element={<Navigate to="/private-downloader" replace />} />
+            <Route path="/instagram-reels-download" element={<Navigate to="/reels" replace />} />
             <Route path="/instagram-video-download" element={<ToolPage type="video" />} />
             <Route path="/instagram-photo-download" element={<ToolPage type="photo" />} />
-            <Route path="/instagram-story-download" element={<ToolPage type="stories" />} />
+            <Route path="/instagram-story-download" element={<Navigate to="/stories" replace />} />
             <Route path="/instagram-igtv-download" element={<ToolPage type="igtv" />} />
             <Route path="/reels" element={<ToolPage type="reels" />} />
             <Route path="/video" element={<ToolPage type="video" />} />

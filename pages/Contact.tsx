@@ -6,7 +6,7 @@ const Contact: React.FC = () => {
         <div className="bg-slate-950 pt-32 pb-24 min-h-screen">
             <SEO
                 title="Contact Us"
-                description="Get in touch with the InstamInsta support team. We're here to help with your downloader questions."
+                description="Get in touch with the instaminsta support team. We're here to help with your downloader questions."
                 canonical="/contact"
             />
             <div className="max-w-4xl mx-auto px-4">

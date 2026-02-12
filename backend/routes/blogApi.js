@@ -46,9 +46,9 @@ const authenticateAPIKey = (req, res, next) => {
 // POST /api/blog/publish
 // ============================================
 router.post('/publish', authenticateAPIKey, async (req, res) => {
-    const connection = await pool.getConnection();
-
+    let connection;
     try {
+        connection = await pool.getConnection();
         const {
             title,
             slug,
@@ -113,6 +113,14 @@ router.post('/publish', authenticateAPIKey, async (req, res) => {
             ]
         );
 
+        // Update keyword status if it was in our list
+        if (keyword) {
+            await connection.query(
+                'UPDATE seo_keywords SET status = "published", published_at = NOW() WHERE keyword = ? OR LOWER(keyword) = LOWER(?)',
+                [keyword, keyword]
+            );
+        }
+
         await connection.commit();
 
         res.status(201).json({
@@ -126,54 +134,64 @@ router.post('/publish', authenticateAPIKey, async (req, res) => {
         });
 
     } catch (error) {
-        await connection.rollback();
+        if (connection) await connection.rollback();
         console.error('Blog publish error:', error);
-        res.status(500).json({ success: false, error: 'Failed to publish blog' });
+        res.status(500).json({ success: false, error: 'Failed' });
     } finally {
-        connection.release();
+        if (connection) connection.release();
     }
 });
 
 // ============================================
-// ENDPOINT: Get All Blogs (Public)
-// GET /api/blog/posts
+// ENDPOINT: Get Next Keyword to Write (for n8n)
+// GET /api/blog/keywords/next
 // ============================================
-router.get('/posts', async (req, res) => {
+router.get('/keywords/next', authenticateAPIKey, async (req, res) => {
+    let connection;
     try {
-        const [rows] = await pool.query(
-            'SELECT blog_id, title, slug, excerpt, keyword, category, published_at FROM blogs WHERE status = "published" ORDER BY published_at DESC'
-        );
-        res.json({ success: true, data: rows });
-    } catch (error) {
-        console.error('Fetch blogs error:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch blogs' });
-    }
-});
+        connection = await pool.getConnection();
 
-// ============================================
-// ENDPOINT: Get Single Blog (Public)
-// GET /api/blog/posts/:slug
-// ============================================
-router.get('/posts/:slug', async (req, res) => {
-    try {
-        const [rows] = await pool.query(
-            'SELECT * FROM blogs WHERE slug = ? AND status = "published"',
-            [req.params.slug]
+        // Find a pending keyword
+        const [rows] = await connection.query(
+            'SELECT * FROM seo_keywords WHERE status = "pending" ORDER BY search_volume DESC LIMIT 1'
         );
 
         if (rows.length === 0) {
-            return res.status(404).json({ success: false, error: 'Post not found' });
+            return res.json({ success: true, keyword: null });
         }
 
-        // Increment view count (simple)
-        pool.query('UPDATE blogs SET view_count = view_count + 1 WHERE blog_id = ?', [rows[0].blog_id]);
+        // Mark as writing to avoid parallel node runs picking the same one
+        await connection.query(
+            'UPDATE seo_keywords SET status = "writing", assigned_at = NOW() WHERE keyword_id = ?',
+            [rows[0].keyword_id]
+        );
 
         res.json({ success: true, data: rows[0] });
     } catch (error) {
-        console.error('Fetch blog detail error:', error);
-        res.status(500).json({ success: false, error: 'Failed to fetch blog post' });
+        console.error('Fetch keyword error:', error);
+        res.status(500).json({ success: false, error: 'Failed to fetch keyword' });
+    } finally {
+        if (connection) connection.release();
     }
 });
+
+// ============================================
+// ENDPOINT: Get Internal Link Suggestions (for n8n)
+// GET /api/blog/internal-links
+// ============================================
+router.get('/internal-links', authenticateAPIKey, async (req, res) => {
+    try {
+        // Fetch 5 most recent relevant posts
+        const [rows] = await pool.query(
+            'SELECT title, slug FROM blogs WHERE status = "published" ORDER BY published_at DESC LIMIT 5'
+        );
+        res.json({ success: true, data: rows });
+    } catch (error) {
+        console.error('Fetch internal links error:', error);
+        res.status(500).json({ success: false, error: 'Failed' });
+    }
+});
+
 
 // ============================================
 // ENDPOINT: Update Sitemap (Called by n8n after publish)

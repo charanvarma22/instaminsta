@@ -36,14 +36,14 @@ const BlogListPage: React.FC = () => {
   return (
     <div className="bg-slate-950 min-h-screen pt-12 pb-24">
       <SEO
-        title="InstamInsta Blog - Instagram Marketing & Content Tips"
+        title="instaminsta Blog - Instagram Marketing & Content Tips"
         description="Expert guides on growing your Instagram presence, using Reels, and mastering social media marketing in 2026."
         canonical="/blog"
       />
 
       <div className="max-w-7xl mx-auto px-4 text-center mb-16">
         <h1 className="text-5xl md:text-7xl font-black mb-6 text-white leading-tight">
-          InstamInsta <span className="hero-text-gradient">Blog</span>
+          instaminsta <span className="hero-text-gradient">Blog</span>
         </h1>
         <p className="text-slate-400 text-xl max-w-2xl mx-auto font-medium">
           Master the art of Instagram content creation and marketing in 2026.

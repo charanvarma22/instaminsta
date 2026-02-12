@@ -9,7 +9,7 @@ interface SEOProps {
 const SEO: React.FC<SEOProps> = ({ title, description, canonical }) => {
     useEffect(() => {
         // Update title
-        document.title = `${title} | InstamInsta`;
+        document.title = `${title} | instaminsta`;
 
         // Update description meta tag
         if (description) {

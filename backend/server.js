@@ -2,13 +2,22 @@ import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 import axios from "axios";
+import path from "path";
+import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
 import { rateLimit } from 'express-rate-limit';
 import * as resolverModule from "./resolver.js";
 import { fetchMediaByShortcode, fetchStoryByUrl, fetchIGTVByUrl, fetchProfileByUrl } from "./igApi.js";
 import blogRoutes from './routes/blogApi.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Explicitly load .env from absolute path
+dotenv.config({ path: path.join(__dirname, '.env') });
+
 const app = express();
-const PORT = process.env.PORT || 3004; // Standardized to 3004
+const PORT = process.env.PORT || 3004;
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -25,6 +34,14 @@ const limiter = rateLimit({
     message: { error: "Too many requests, please try again later." }
 });
 app.use(limiter);
+
+// Process Errors - Prevent infinite crash loop
+process.on('uncaughtException', (err) => {
+    console.error('CRITICAL: Uncaught Exception:', err);
+});
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('CRITICAL: Unhandled Rejection at:', promise, 'reason:', reason);
+});
 
 // Logging
 app.use((req, res, next) => {

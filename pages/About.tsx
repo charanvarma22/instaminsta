@@ -6,7 +6,7 @@ const About: React.FC = () => {
         <div className="bg-slate-950 pt-32 pb-24 min-h-screen">
             <SEO
                 title="About Us"
-                description="Learn about the mission behind InstamInsta - the leading Instagram media downloader of 2026."
+                description="Learn about the mission behind instaminsta - the leading Instagram media downloader of 2026."
                 canonical="/about"
             />
             <div className="max-w-4xl mx-auto px-4">
@@ -14,7 +14,7 @@ const About: React.FC = () => {
 
                 <div className="prose prose-invert prose-lg max-w-none text-slate-400 font-medium space-y-12">
                     <div className="text-center text-2xl leading-relaxed text-slate-300">
-                        InstamInsta was founded in 2026 with a simple goal: <strong>To make social media content accessible to everyone, everywhere, without barriers.</strong>
+                        instaminsta was founded in 2026 with a simple goal: <strong>To make social media content accessible to everyone, everywhere, without barriers.</strong>
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-8 not-prose">
@@ -33,7 +33,7 @@ const About: React.FC = () => {
                     <section className="text-center py-12">
                         <h2 className="text-3xl font-bold text-white mb-6">Built for the Modern Web</h2>
                         <p>
-                            In a world of intrusive ads and complex subscriptions, InstamInsta remains committed to simplicity. Our infrastructure is powered by cutting-edge server-side logic that scales to millions of users while maintaining lightning-fast response times.
+                            In a world of intrusive ads and complex subscriptions, instaminsta remains committed to simplicity. Our infrastructure is powered by cutting-edge server-side logic that scales to millions of users while maintaining lightning-fast response times.
                         </p>
                     </section>
 

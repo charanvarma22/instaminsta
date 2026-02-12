@@ -6,7 +6,7 @@ const Terms: React.FC = () => {
         <div className="bg-slate-950 pt-32 pb-24 min-h-screen">
             <SEO
                 title="Terms & Conditions"
-                description="Terms and Conditions for using InstamInsta's Instagram downloader service."
+                description="Terms and Conditions for using instaminsta's Instagram downloader service."
                 canonical="/terms"
             />
             <div className="max-w-4xl mx-auto px-4">
@@ -16,7 +16,7 @@ const Terms: React.FC = () => {
                     <section>
                         <h2 className="text-2xl font-bold text-white mb-4">1. Acceptance of Terms</h2>
                         <p>
-                            By accessing InstamInsta.com, you agree to be bound by these Terms of Service. If you do not agree, please do not use our service.
+                            By accessing instaminsta.com, you agree to be bound by these Terms of Service. If you do not agree, please do not use our service.
                         </p>
                     </section>
 
@@ -30,14 +30,14 @@ const Terms: React.FC = () => {
                     <section>
                         <h2 className="text-2xl font-bold text-white mb-4">3. Intellectual Property</h2>
                         <p>
-                            All trademarks, logos, and content on Instagram belong to their respective owners. InstamInsta is not affiliated with, endorsed by, or sponsored by Instagram or Meta Platforms, Inc.
+                            All trademarks, logos, and content on Instagram belong to their respective owners. instaminsta is not affiliated with, endorsed by, or sponsored by Instagram or Meta Platforms, Inc.
                         </p>
                     </section>
 
                     <section>
                         <h2 className="text-2xl font-bold text-white mb-4">4. Limitation of Liability</h2>
                         <p>
-                            InstamInsta is provided "as is" without any warranties. We are not liable for any damages arising from the use or inability to use our tool. We do not guarantee 100% uptime.
+                            instaminsta is provided "as is" without any warranties. We are not liable for any damages arising from the use or inability to use our tool. We do not guarantee 100% uptime.
                         </p>
                     </section>
 

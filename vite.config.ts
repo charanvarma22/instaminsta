@@ -12,6 +12,12 @@ export default defineConfig(({ mode }) => {
       strictPort: true,
       host: true,
     },
+    preview: {
+      port: 3005,
+      strictPort: true,
+      host: true,
+      allowedHosts: ['instaminsta.com'],
+    },
     define: {
       'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)

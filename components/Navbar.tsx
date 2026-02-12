@@ -13,21 +13,20 @@ const Navbar: React.FC = () => {
         <div className="flex justify-between items-center h-20">
           <div className="flex-shrink-0">
             <Link to="/" className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-xl insta-gradient flex items-center justify-center text-white font-bold text-2xl shadow-lg shadow-orange-500/20">I</div>
-              <span className="text-2xl font-black tracking-tighter text-white">InstamInsta</span>
+              <div className="w-10 h-10 rounded-xl insta-gradient flex items-center justify-center text-white font-bold text-2xl shadow-lg shadow-orange-500/20">i</div>
+              <span className="text-2xl font-black tracking-tighter text-white lowercase">instaminsta</span>
             </Link>
           </div>
-          
+
           <div className="hidden lg:flex flex-grow justify-center space-x-6">
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
-                className={`text-sm font-bold transition-all duration-200 hover:scale-105 ${
-                  location.pathname === link.path 
-                    ? 'text-pink-500' 
+                className={`text-sm font-bold transition-all duration-200 hover:scale-105 ${location.pathname === link.path
+                    ? 'text-pink-500'
                     : 'text-slate-400 hover:text-white'
-                }`}
+                  }`}
               >
                 {link.name.replace('Downloader', '').replace('Saver', '').trim()}
               </Link>

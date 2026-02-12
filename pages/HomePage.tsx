@@ -40,7 +40,7 @@ const HomePage: React.FC = () => {
               Comprehensive <span className="hero-text-gradient">Instagram Downloader</span> 2026
             </h2>
             <p className="text-slate-400 text-xl leading-relaxed max-w-4xl mx-auto font-medium">
-              InstamInsta is engineered to be the most versatile tool in your social media arsenal. We don't just download; we provide a high-fidelity bridge to the Instagram CDN, ensuring you get the original quality every single time.
+              instaminsta is engineered to be the most versatile tool in your social media arsenal. We don't just download; we provide a high-fidelity bridge to the Instagram CDN, ensuring you get the original quality every single time.
             </p>
           </div>
 
@@ -48,7 +48,7 @@ const HomePage: React.FC = () => {
             <div className="bg-slate-900/40 p-10 rounded-[2.5rem] border border-slate-800 hover:border-pink-500/30 transition-all shadow-xl">
               <h3 className="text-2xl font-bold text-white mb-4">FastDL Alternative</h3>
               <p className="text-slate-500 leading-relaxed text-sm">
-                Searching for a reliable <strong>FastDL alternative</strong>? InstamInsta offers a cleaner, ad-free experience with superior download speeds. Our infrastructure is optimized for 2026 standards, handling 4K video streams with ease.
+                Searching for a reliable <strong>FastDL alternative</strong>? instaminsta offers a cleaner, ad-free experience with superior download speeds. Our infrastructure is optimized for 2026 standards, handling 4K video streams with ease.
               </p>
             </div>
             <div className="bg-slate-900/40 p-10 rounded-[2.5rem] border border-slate-800 hover:border-pink-500/30 transition-all shadow-xl">
@@ -77,7 +77,7 @@ const HomePage: React.FC = () => {
           <div className="grid md:grid-cols-3 gap-12">
             {[
               { step: "1", title: "Copy URL", desc: "Find the content on Instagram and select 'Copy Link' from the share menu." },
-              { step: "2", title: "Paste Link", desc: "Paste your link into the InstamInsta search box at the top of this page." },
+              { step: "2", title: "Paste Link", desc: "Paste your link into the instaminsta search box at the top of this page." },
               { step: "3", title: "Download", desc: "Choose your quality and click Download. Your file is saved instantly." }
             ].map((item, idx) => (
               <div key={idx} className="relative bg-slate-900/20 p-8 rounded-[2rem] border border-slate-800 flex flex-col items-center text-center">
@@ -98,9 +98,9 @@ const HomePage: React.FC = () => {
       <section className="py-24 bg-slate-950">
         <div className="max-w-5xl mx-auto px-4">
           <div className="prose prose-invert prose-lg max-w-none text-slate-400 font-medium">
-            <h2 className="text-4xl font-black text-white mb-8 text-center">Why InstamInsta is the #1 Instagram Downloader in 2026</h2>
+            <h2 className="text-4xl font-black text-white mb-8 text-center">Why instaminsta is the #1 Instagram Downloader in 2026</h2>
             <p className="mb-6">
-              Instagram has evolved significantly, and so have the tools we use to interact with it. In 2026, content is the new currency, and <strong>InstamInsta</strong> is the vault where you can securely archive that currency. Whether you're a digital marketer needing to save ad creatives or a fan wanting to keep a personal copy of a viral reel, our platform provides the stability and speed you require.
+              Instagram has evolved significantly, and so have the tools we use to interact with it. In 2026, content is the new currency, and <strong>instaminsta</strong> is the vault where you can securely archive that currency. Whether you're a digital marketer needing to save ad creatives or a fan wanting to keep a personal copy of a viral reel, our platform provides the stability and speed you require.
             </p>
 
             <h3 className="text-2xl font-bold text-white mt-12 mb-4">The Best Reels Downloader Online</h3>

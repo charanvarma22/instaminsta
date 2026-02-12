@@ -11,7 +11,7 @@ const Footer: React.FC = () => {
           <div className="col-span-1 md:col-span-1">
             <Link to="/" className="flex items-center gap-2 mb-6 text-white">
               <div className="w-8 h-8 rounded-lg insta-gradient flex items-center justify-center font-bold text-xl">I</div>
-              <span className="text-2xl font-extrabold tracking-tight">InstamInsta</span>
+              <span className="text-2xl font-extrabold tracking-tight">instaminsta</span>
             </Link>
             <p className="text-sm leading-relaxed max-w-xs">
               The fastest and safest way to download Instagram content. Free, anonymous, and high quality.
@@ -50,7 +50,7 @@ const Footer: React.FC = () => {
         </div>
 
         <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center text-xs">
-          <p>© 2026 InstamInsta.com - All rights reserved. <span className="opacity-50 text-[10px]">v2.6-NAV-CLEAN</span></p>
+          <p>© 2026 instaminsta.com - All rights reserved. <span className="opacity-50 text-[10px]">v2.6-NAV-CLEAN</span></p>
           <p className="mt-4 md:mt-0 italic">Not affiliated with Instagram or Meta Platforms, Inc.</p>
         </div>
       </div>

@@ -6,7 +6,7 @@ const Privacy: React.FC = () => {
         <div className="bg-slate-950 pt-32 pb-24 min-h-screen">
             <SEO
                 title="Privacy Policy"
-                description="Privacy Policy for InstamInsta. Learn how we handle your data and ensure your anonymity while downloading Instagram media."
+                description="Privacy Policy for instaminsta. Learn how we handle your data and ensure your anonymity while downloading Instagram media."
                 canonical="/privacy"
             />
             <div className="max-w-4xl mx-auto px-4">
@@ -16,7 +16,7 @@ const Privacy: React.FC = () => {
                     <section>
                         <h2 className="text-2xl font-bold text-white mb-4">1. Data Collection</h2>
                         <p>
-                            InstamInsta does not require any user registration or login. We do not collect personal identification information like names, email addresses, or phone numbers. Our service is designed to be 100% anonymous.
+                            instaminsta does not require any user registration or login. We do not collect personal identification information like names, email addresses, or phone numbers. Our service is designed to be 100% anonymous.
                         </p>
                     </section>
 
@@ -30,7 +30,7 @@ const Privacy: React.FC = () => {
                     <section>
                         <h2 className="text-2xl font-bold text-white mb-4">3. Instagram Data</h2>
                         <p>
-                            InstamInsta acts as a bridge between you and the public Instagram CDN. We do not store any media files on our servers. All downloads are streamed directly from the source to your device. We do not keep logs of which URLs you download.
+                            instaminsta acts as a bridge between you and the public Instagram CDN. We do not store any media files on our servers. All downloads are streamed directly from the source to your device. We do not keep logs of which URLs you download.
                         </p>
                     </section>
 

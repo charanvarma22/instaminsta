@@ -1,12 +1,13 @@
 import axios from 'axios';
 
 // --- CONFIGURATION ---
-const API_URL = 'http://localhost:3004/api/blog/publish';
+const API_URL = 'http://127.0.0.1:3004/api/blog/publish';
 const API_KEY = 'my_secret_key_123'; // CHANGE THIS to your BLOG_API_KEY from .env
 // ---------------------
 
 const testData = {
     title: "Success! The Blog is Live 🚀",
+    slug: "success-the-blog-is-live-final-victory",
     content: "### Automation Complete\nThis post was generated via our custom test script. Your system is now ready for n8n to take over and start publishing SEO content automatically!",
     excerpt: "Verifying the automated publishing pipeline...",
     category: "Announcement",

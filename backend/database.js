@@ -1,7 +1,12 @@
 import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 const pool = mysql.createPool({
     host: process.env.DB_HOST || 'localhost',
@@ -10,7 +15,8 @@ const pool = mysql.createPool({
     database: process.env.DB_NAME || 'instaminsta_db',
     waitForConnections: true,
     connectionLimit: 10,
-    queueLimit: 0
+    queueLimit: 0,
+    connectTimeout: 10000 // 10 seconds timeout
 });
 
 // Check connection

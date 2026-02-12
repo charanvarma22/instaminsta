@@ -75,7 +75,7 @@ const BlogPage: React.FC = () => {
                     <div className="flex items-center text-slate-400 text-sm">
                         <span>Published on {new Date(post.published_at).toLocaleDateString()}</span>
                         <span className="mx-3">•</span>
-                        <span>By InstamInsta Editorial</span>
+                        <span>By instaminsta Editorial</span>
                     </div>
                 </div>
 
@@ -91,7 +91,7 @@ const BlogPage: React.FC = () => {
                 <div className="mt-20 p-12 bg-slate-900/50 border border-slate-800 rounded-[3rem] text-center">
                     <h3 className="text-3xl font-black text-white mb-4">Enjoyed this guide?</h3>
                     <p className="text-slate-400 mb-8 max-w-md mx-auto">
-                        Download Instagram Reels and Photos in HD for free with InstamInsta.
+                        Download Instagram Reels and Photos in HD for free with instaminsta.
                         No registration required.
                     </p>
                     <Link to="/" className="inline-block bg-white text-black font-black px-10 py-4 rounded-full hover:scale-105 transition-transform">

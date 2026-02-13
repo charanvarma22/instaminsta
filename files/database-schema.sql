@@ -203,10 +203,35 @@ GROUP BY DATE(created_at)
 ORDER BY publish_date DESC;
 
 -- ============================================
--- INDEXES FOR OPTIMIZATION
+-- INDEXES FOR OPTIMIZATION (Idempotent)
 -- ============================================
-ALTER TABLE blogs ADD INDEX idx_status_published_at (status, published_at);
-ALTER TABLE seo_keywords ADD INDEX idx_composite (status, used, priority);
+DELIMITER //
+DROP PROCEDURE IF EXISTS AddIndexesIfNeeded //
+CREATE PROCEDURE AddIndexesIfNeeded()
+BEGIN
+    -- unique check for blogs index
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.statistics 
+        WHERE table_schema = DATABASE() 
+        AND table_name = 'blogs' 
+        AND index_name = 'idx_status_published_at'
+    ) THEN
+        ALTER TABLE blogs ADD INDEX idx_status_published_at (status, published_at);
+    END IF;
+
+    -- unique check for seo_keywords index
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.statistics 
+        WHERE table_schema = DATABASE() 
+        AND table_name = 'seo_keywords' 
+        AND index_name = 'idx_composite'
+    ) THEN
+        ALTER TABLE seo_keywords ADD INDEX idx_composite (status, used, priority);
+    END IF;
+END //
+DELIMITER ;
+CALL AddIndexesIfNeeded();
+DROP PROCEDURE AddIndexesIfNeeded;
 
 -- ============================================
 -- GRANTS (Optional - adjust username/password)

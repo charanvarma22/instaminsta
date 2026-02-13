@@ -108,7 +108,7 @@ CREATE TABLE IF NOT EXISTS `blog_analytics` (
 -- SAMPLE DATA: SEO Keywords
 -- Add your initial keywords here
 -- ============================================
-INSERT INTO `seo_keywords` (`keyword`, `category`, `search_volume`, `difficulty`, `priority`, `status`) VALUES
+INSERT IGNORE INTO `seo_keywords` (`keyword`, `category`, `search_volume`, `difficulty`, `priority`, `status`) VALUES
 ('how to grow instagram followers organically', 'Instagram Growth', 5400, 45, 9, 'pending'),
 ('best time to post on instagram 2024', 'Instagram Tips', 8900, 52, 8, 'pending'),
 ('instagram reels ideas for business', 'Content Strategy', 3200, 38, 7, 'pending'),

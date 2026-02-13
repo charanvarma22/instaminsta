@@ -124,6 +124,7 @@ INSERT IGNORE INTO `seo_keywords` (`keyword`, `category`, `search_volume`, `diff
 -- STORED PROCEDURE: Get Daily Publish Count
 -- ============================================
 DELIMITER //
+DROP PROCEDURE IF EXISTS GetDailyPublishCount //
 CREATE PROCEDURE GetDailyPublishCount()
 BEGIN
     SELECT COUNT(*) as count 
@@ -138,6 +139,7 @@ DELIMITER ;
 -- Returns highest priority unused keyword
 -- ============================================
 DELIMITER //
+DROP PROCEDURE IF EXISTS GetNextKeyword //
 CREATE PROCEDURE GetNextKeyword()
 BEGIN
     SELECT keyword_id, keyword, category 
@@ -153,6 +155,7 @@ DELIMITER ;
 -- TRIGGER: Update blog updated_at on content change
 -- ============================================
 DELIMITER //
+DROP TRIGGER IF EXISTS before_blog_update //
 CREATE TRIGGER before_blog_update
 BEFORE UPDATE ON blogs
 FOR EACH ROW

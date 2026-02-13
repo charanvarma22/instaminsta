@@ -1,14 +1,48 @@
-
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BLOG_POSTS } from '../constants';
+import axios from 'axios';
+import { API_BASE_URL } from '../constants';
+
+interface BlogPost {
+  blog_id: number;
+  title: string;
+  slug: string;
+  excerpt: string;
+  category: string;
+  published_at: string;
+  view_count: number;
+}
 
 interface Props {
   limit?: number;
 }
 
 const BlogSection: React.FC<Props> = ({ limit }) => {
-  const posts = limit ? BLOG_POSTS.slice(0, limit) : BLOG_POSTS;
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        // Only fetch if we are in a valid environment, otherwise fallback to empty or static
+        const response = await axios.get(`${API_BASE_URL}/api/blog/posts?limit=${limit || 3}`);
+        if (response.data.success && response.data.data.length > 0) {
+          setPosts(response.data.data);
+        } else {
+          // Fallback if no posts exist yet
+          setPosts([]);
+        }
+      } catch (error) {
+        console.error('Failed to load blog posts:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, [limit]);
+
+  if (!loading && posts.length === 0) return null; // Don't show section if no posts
 
   return (
     <section className="py-24 bg-transparent">
@@ -25,16 +59,19 @@ const BlogSection: React.FC<Props> = ({ limit }) => {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-10">
           {posts.map(post => (
-            <Link key={post.id} to={`/blog/${post.id}`} className="group bg-slate-900/40 rounded-[3rem] overflow-hidden border border-slate-800 hover:border-pink-500/30 transition-all shadow-2xl flex flex-col md:flex-row">
-              <div className="md:w-2/5 h-64 md:h-auto overflow-hidden">
-                <img src={post.image} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 grayscale-[20%] group-hover:grayscale-0" />
+            <Link key={post.slug} to={`/blog/${post.slug}`} className="group bg-slate-900/40 rounded-[3rem] overflow-hidden border border-slate-800 hover:border-pink-500/30 transition-all shadow-2xl flex flex-col md:flex-row">
+              <div className="md:w-2/5 h-64 md:h-auto overflow-hidden bg-slate-800 flex items-center justify-center">
+                {/* Placeholder API doesn't return images yet, using pattern */}
+                <span className="text-4xl">📝</span>
               </div>
               <div className="md:w-3/5 p-10 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center gap-4 mb-6">
                     <span className="text-xs font-black text-pink-500 uppercase tracking-widest">{post.category}</span>
                     <span className="w-1 h-1 rounded-full bg-slate-700"></span>
-                    <span className="text-xs text-slate-500 font-bold">{post.date}</span>
+                    <span className="text-xs text-slate-500 font-bold">
+                      {new Date(post.published_at).toLocaleDateString()}
+                    </span>
                   </div>
                   <h3 className="text-2xl font-bold mb-4 text-white leading-tight group-hover:text-pink-500 transition-colors">
                     {post.title}

@@ -194,6 +194,66 @@ router.get('/internal-links', authenticateAPIKey, async (req, res) => {
 
 
 // ============================================
+// ENDPOINT: Get All Blog Posts (Public)
+// GET /api/blog/posts?limit=10&page=1
+// ============================================
+router.get('/posts', async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 10;
+        const page = parseInt(req.query.page) || 1;
+        const offset = (page - 1) * limit;
+
+        const [rows] = await pool.query(
+            "SELECT blog_id, title, slug, excerpt, category, published_at, view_count, meta_description FROM blogs WHERE status = 'published' ORDER BY published_at DESC LIMIT ? OFFSET ?",
+            [limit, offset]
+        );
+
+        const [countResult] = await pool.query("SELECT COUNT(*) as total FROM blogs WHERE status = 'published'");
+
+        res.json({
+            success: true,
+            data: rows,
+            pagination: {
+                total: countResult[0].total,
+                page,
+                limit,
+                pages: Math.ceil(countResult[0].total / limit)
+            }
+        });
+    } catch (error) {
+        console.error('Fetch blogs error:', error);
+        res.status(500).json({ success: false, error: 'Failed to fetch blogs' });
+    }
+});
+
+// ============================================
+// ENDPOINT: Get Single Blog Post by Slug (Public)
+// GET /api/blog/posts/:slug
+// ============================================
+router.get('/posts/:slug', async (req, res) => {
+    try {
+        const { slug } = req.params;
+
+        // Update view count
+        await pool.query("UPDATE blogs SET view_count = view_count + 1 WHERE slug = ?", [slug]);
+
+        const [rows] = await pool.query(
+            "SELECT * FROM blogs WHERE slug = ? AND status = 'published'",
+            [slug]
+        );
+
+        if (rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'Blog not found' });
+        }
+
+        res.json({ success: true, data: rows[0] });
+    } catch (error) {
+        console.error('Fetch single blog error:', error);
+        res.status(500).json({ success: false, error: 'Failed to fetch blog' });
+    }
+});
+
+// ============================================
 // ENDPOINT: Update Sitemap (Called by n8n after publish)
 // GET /api/sitemap/update
 // ============================================

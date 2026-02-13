@@ -13,6 +13,7 @@ const About = lazy(() => import('./pages/About'));
 const Contact = lazy(() => import('./pages/Contact'));
 const Privacy = lazy(() => import('./pages/Privacy'));
 const Terms = lazy(() => import('./pages/Terms'));
+const AdminPage = lazy(() => import('./pages/AdminPage'));
 
 // Loading component
 const PageLoader = () => (
@@ -72,6 +73,7 @@ const App: React.FC = () => {
 
               <Route path="/blog" element={<BlogListPage />} />
               <Route path="/blog/:slug" element={<BlogPage />} />
+              <Route path="/admin" element={<AdminPage />} />
               <Route path="/about" element={<About />} />
 
               <Route path="/contact" element={<Contact />} />

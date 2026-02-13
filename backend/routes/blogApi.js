@@ -194,6 +194,75 @@ router.get('/internal-links', authenticateAPIKey, async (req, res) => {
 
 
 // ============================================
+// ENDPOINT: Get All Drafts (Admin)
+// GET /api/blog/admin/posts?status=draft
+// ============================================
+router.get('/admin/posts', authenticateAPIKey, async (req, res) => {
+    try {
+        const status = req.query.status || 'draft';
+        const [rows] = await pool.query(
+            "SELECT blog_id, title, slug, category, created_at, status FROM blogs WHERE status = ? ORDER BY created_at DESC",
+            [status]
+        );
+        res.json({ success: true, data: rows });
+    } catch (error) {
+        console.error('Fetch admin posts error:', error);
+        res.status(500).json({ success: false, error: 'Failed' });
+    }
+});
+
+// ============================================
+// ENDPOINT: Get Single Draft (Admin)
+// GET /api/blog/admin/posts/:id
+// ============================================
+router.get('/admin/posts/:id', authenticateAPIKey, async (req, res) => {
+    try {
+        const [rows] = await pool.query("SELECT * FROM blogs WHERE blog_id = ?", [req.params.id]);
+        if (rows.length === 0) return res.status(404).json({ success: false, error: 'Not found' });
+        res.json({ success: true, data: rows[0] });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Failed' });
+    }
+});
+
+// ============================================
+// ENDPOINT: Update Blog Post (Admin: Edit/Publish)
+// PUT /api/blog/admin/posts/:id
+// ============================================
+router.put('/admin/posts/:id', authenticateAPIKey, async (req, res) => {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const { id } = req.params;
+        const { title, content, status, slug, excerpt } = req.body;
+
+        const htmlContent = DOMPurify.sanitize(marked.parse(content));
+
+        await connection.query(
+            `UPDATE blogs SET 
+             title = ?, content = ?, html_content = ?, 
+             status = ?, slug = ?, excerpt = ?,
+             updated_at = NOW(),
+             published_at = CASE WHEN ? = 'published' AND published_at IS NULL THEN NOW() ELSE published_at END
+             WHERE blog_id = ?`,
+            [title, content, htmlContent, status, slug, excerpt, status, id]
+        );
+
+        // Update sitemap if published
+        if (status === 'published') {
+            // trigger sitemap update logic (simplified here)
+        }
+
+        res.json({ success: true, message: 'Updated successfully' });
+    } catch (error) {
+        console.error('Update error:', error);
+        res.status(500).json({ success: false, error: 'Failed' });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
+// ============================================
 // ENDPOINT: Get All Blog Posts (Public)
 // GET /api/blog/posts?limit=10&page=1
 // ============================================

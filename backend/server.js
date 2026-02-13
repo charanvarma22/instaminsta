@@ -180,7 +180,14 @@ app.post("/api/preview", async (req, res) => {
 
 app.get("/api/health", (req, res) => res.json({ status: "ok", version: "2.6" }));
 app.get("/health", (req, res) => res.json({ status: "ok" }));
-app.get("/", (req, res) => res.send("FastDL Backend Active"));
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, '../dist')));
+
+// The "catchall" handler: for any request that doesn't
+// match one above, send back React's index.html file.
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../dist/index.html'));
+});
 
 app.listen(PORT, () => {
     console.log(`✅ Backend running at http://localhost:${PORT}`);

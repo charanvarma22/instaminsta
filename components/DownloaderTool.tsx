@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { analyzeInstagramUrl } from '../services/geminiService';
 import { TOOL_TABS, API_BASE_URL } from '../constants';
@@ -24,8 +24,17 @@ const DownloaderTool: React.FC<Props> = ({ title, description }) => {
   const [error, setError] = useState('');
   const [aiInfo, setAiInfo] = useState('');
 
+  const resultRef = useRef<HTMLDivElement>(null);
+
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Auto-scroll to result when it appears
+  useEffect(() => {
+    if (result && resultRef.current) {
+      resultRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [result]);
 
   const handleDownload = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -200,7 +209,7 @@ const DownloaderTool: React.FC<Props> = ({ title, description }) => {
       </div>
 
       {result && result.items && result.items.length > 0 && (
-        <div className="mt-16 bg-slate-900/60 rounded-[3rem] shadow-4xl overflow-hidden border border-slate-800 text-left backdrop-blur-xl animate-in zoom-in-95 duration-500">
+        <div ref={resultRef} className="mt-16 bg-slate-900/60 rounded-[3rem] shadow-4xl overflow-hidden border border-slate-800 text-left backdrop-blur-xl animate-in zoom-in-95 duration-500 scroll-mt-24">
           <div className="md:flex">
             <div className="md:w-1/2 p-3">
               <img

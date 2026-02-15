@@ -36,8 +36,18 @@ const DownloaderTool: React.FC<Props> = ({ title, description }) => {
     }
   }, [result]);
 
-  const handleDownload = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Auto-trigger download when a valid link is pasted
+  useEffect(() => {
+    const isInstagram = url.includes('instagram.com/') && (url.includes('/p/') || url.includes('/reels/') || url.includes('/stories/') || url.includes('/tv/'));
+
+    if (isInstagram && !loading && !result) {
+      handleDownload();
+    }
+  }, [url]);
+
+  const handleDownload = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+
     if (!url || !url.includes('instagram.com')) {
       setError('Please enter a valid Instagram URL');
       return;

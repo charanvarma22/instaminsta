@@ -15,7 +15,7 @@ const HomePage: React.FC = () => {
         canonical="/"
       />
       <DownloaderTool
-        title="Video"
+        title="Best Instagram Reels Downloader"
         description="Save your favorite Reels, Videos, and Photos instantly. The pro's choice for safe and unlimited Instagram content downloading in 2026."
       />
 

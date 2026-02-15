@@ -121,8 +121,8 @@ const DownloaderTool: React.FC<Props> = ({ title, description }) => {
   return (
     <div className="w-full max-w-5xl mx-auto px-4 py-16 md:py-24 text-center">
       <div className="mb-8">
-        <h1 className="text-4xl md:text-7xl font-black mb-6 tracking-tight text-white">
-          instaminsta <span className="hero-text-gradient">{title}</span> Downloader
+        <h1 className="text-4xl md:text-7xl font-black mb-6 tracking-tight text-white leading-tight">
+          <span className="hero-text-gradient">{title}</span>
         </h1>
         <p className="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto font-medium leading-relaxed">
           {description}

@@ -43,6 +43,28 @@ const SEO: React.FC<SEOProps> = ({ title, description, canonical }) => {
             link.href = href;
             document.head.appendChild(link);
         }
+
+        // Update Open Graph and Twitter tags for better social/search snippets
+        const updateMeta = (property: string, content: string, attr = 'property') => {
+            let el = document.querySelector(`meta[${attr}="${property}"]`);
+            if (el) {
+                el.setAttribute('content', content);
+            } else {
+                const meta = document.createElement('meta');
+                meta.setAttribute(attr, property);
+                meta.content = content;
+                document.head.appendChild(meta);
+            }
+        };
+
+        const fullTitle = document.title;
+        updateMeta('og:title', fullTitle);
+        updateMeta('twitter:title', fullTitle, 'name');
+
+        if (description) {
+            updateMeta('og:description', description);
+            updateMeta('twitter:description', description, 'name');
+        }
     }, [title, description, canonical]);
 
     return null;

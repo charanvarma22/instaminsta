@@ -30,7 +30,7 @@
       "id": "fetch-keyword",
       "name": "Fetch Unused Keyword",
       "type": "n8n-nodes-base.mysql",
-      "typeVersion": 2.1,
+      "typeVersion": 1,
       "position": [
         470,
         300
@@ -71,7 +71,7 @@
       "id": "check-daily-limit",
       "name": "Check Daily Post Count",
       "type": "n8n-nodes-base.mysql",
-      "typeVersion": 2.1,
+      "typeVersion": 1,
       "position": [
         910,
         200
@@ -113,7 +113,7 @@
       "id": "check-duplicate-slug",
       "name": "Check Duplicate Keyword",
       "type": "n8n-nodes-base.mysql",
-      "typeVersion": 2.1,
+      "typeVersion": 1,
       "position": [
         1350,
         100
@@ -147,16 +147,9 @@
     },
     {
       "parameters": {
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "openAiApi",
         "resource": "chat",
-        "operation": "create",
-        "model": {
-          "__rl": true,
-          "value": "gpt-4o",
-          "mode": "list",
-          "cachedResultName": "GPT-4o"
-        },
+        "operation": "chat",
+        "model": "gpt-4o",
         "messages": {
           "values": [
             {
@@ -176,8 +169,8 @@
       },
       "id": "generate-blog-openai",
       "name": "Generate Blog Content (OpenAI)",
-      "type": "@n8n/n8n-nodes-langchain.openAi",
-      "typeVersion": 1.3,
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
       "position": [
         1790,
         0
@@ -191,16 +184,9 @@
     },
     {
       "parameters": {
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "openAiApi",
         "resource": "chat",
-        "operation": "create",
-        "model": {
-          "__rl": true,
-          "value": "gpt-4o-mini",
-          "mode": "list",
-          "cachedResultName": "GPT-4o Mini"
-        },
+        "operation": "chat",
+        "model": "gpt-4o-mini",
         "messages": {
           "values": [
             {
@@ -220,8 +206,8 @@
       },
       "id": "humanize-content",
       "name": "Humanize Content",
-      "type": "@n8n/n8n-nodes-langchain.openAi",
-      "typeVersion": 1.3,
+      "type": "n8n-nodes-base.openAi",
+      "typeVersion": 1,
       "position": [
         2010,
         0
@@ -275,7 +261,7 @@
       "id": "fetch-existing-blogs",
       "name": "Fetch Existing Blogs for Links",
       "type": "n8n-nodes-base.mysql",
-      "typeVersion": 2.1,
+      "typeVersion": 1,
       "position": [
         3330,
         -100
@@ -354,7 +340,7 @@
       "id": "mark-keyword-used",
       "name": "Mark Keyword as Used",
       "type": "n8n-nodes-base.mysql",
-      "typeVersion": 2.1,
+      "typeVersion": 1,
       "position": [
         4210,
         -200
@@ -399,7 +385,7 @@
       "id": "log-success",
       "name": "Log Success",
       "type": "n8n-nodes-base.mysql",
-      "typeVersion": 2.1,
+      "typeVersion": 1,
       "position": [
         4650,
         -200
@@ -422,7 +408,7 @@
       "id": "log-plagiarism-fail",
       "name": "Log Plagiarism Failure",
       "type": "n8n-nodes-base.mysql",
-      "typeVersion": 2.1,
+      "typeVersion": 1,
       "position": [
         2890,
         200
@@ -445,7 +431,7 @@
       "id": "log-publish-fail",
       "name": "Log Publish Failure",
       "type": "n8n-nodes-base.mysql",
-      "typeVersion": 2.1,
+      "typeVersion": 1,
       "position": [
         3990,
         100

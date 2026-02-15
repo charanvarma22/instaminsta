@@ -26,7 +26,8 @@ pool.getConnection()
         connection.release();
     })
     .catch(err => {
-        console.error('❌ Database Connection Failed:', err.message);
+        // Silenced for now as non-critical for downloader
+        // console.error('❌ Database Connection Failed:', err.message);
     });
 
 export default pool;

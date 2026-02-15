@@ -58,7 +58,11 @@ const DownloaderTool: React.FC<Props> = ({ title, description }) => {
       const data = await response.json();
       setResult(data);
     } catch (err: any) {
-      setError(err.message || 'Something went wrong. Please try again.');
+      let msg = err.message || 'Something went wrong. Please try again.';
+      if (msg.includes('403') || msg.includes('API_BLOCKED')) {
+        msg = 'Instagram access is currently restricted. We are rotating servers, please try another link or wait a moment.';
+      }
+      setError(msg);
     } finally {
       setLoading(false);
     }

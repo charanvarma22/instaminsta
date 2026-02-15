@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { API_BASE_URL } from '../constants';
+import { WORDPRESS_API_URL } from '../constants';
 
 interface BlogPost {
-  blog_id: number;
+  id: number;
   title: string;
   slug: string;
   excerpt: string;
@@ -24,16 +24,32 @@ const BlogSection: React.FC<Props> = ({ limit }) => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        // Only fetch if we are in a valid environment, otherwise fallback to empty or static
-        const response = await axios.get(`${API_BASE_URL}/api/blog/posts?limit=${limit || 3}`);
-        if (response.data.success && response.data.data.length > 0) {
-          setPosts(response.data.data);
+        const response = await axios.get(`${WORDPRESS_API_URL}/posts?_embed&per_page=${limit || 3}`);
+
+        // Handle both standard WP API (array) and custom API (object with data property)
+        const rawData = Array.isArray(response.data) ? response.data :
+          (response.data && Array.isArray(response.data.data) ? response.data.data : []);
+
+        if (rawData.length > 0) {
+          const mappedPosts = rawData.map((post: any) => ({
+            id: post.id,
+            title: post.title?.rendered || post.title || 'Untitled',
+            slug: post.slug,
+            // Handle both standard WP rendered excerpt and plain string
+            excerpt: (post.excerpt?.rendered || post.excerpt || '')
+              .replace(/<[^>]+>/g, '')
+              .substring(0, 150) + '...',
+            category: post.category || 'Strategy',
+            published_at: post.date || post.published_at,
+            view_count: post.view_count || 0
+          }));
+          setPosts(mappedPosts);
         } else {
-          // Fallback if no posts exist yet
           setPosts([]);
         }
       } catch (error) {
-        console.error('Failed to load blog posts:', error);
+        console.warn('Blog posts not available:', error);
+        setPosts([]); // Gracefully handle failure
       } finally {
         setLoading(false);
       }

@@ -6,67 +6,101 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-function loadCookies() {
-    try {
-        const cookiePath = path.join(__dirname, "cookies.txt");
-        if (!fs.existsSync(cookiePath)) {
-            console.warn("⚠️ cookies.txt not found at", cookiePath);
-            return "";
-        }
-        const lines = fs.readFileSync(cookiePath, "utf8").split(/\r?\n/);
-        const cookies = [];
+class CookieManager {
+    constructor() {
+        this.sessions = [];
+        this.currentIndex = 0;
+        this.loadSessions();
+    }
 
-        for (let line of lines) {
-            line = line.trim();
-            if (!line) continue;
-            if (line.startsWith("# Netscape")) continue;
-            if (line.startsWith("# http")) continue;
-
-            // Remove #HttpOnly_ prefix safely
-            if (line.startsWith("#HttpOnly_")) {
-                line = line.replace("#HttpOnly_", "");
+    loadSessions() {
+        try {
+            const cookiesDir = path.join(__dirname, "cookies");
+            if (!fs.existsSync(cookiesDir)) {
+                fs.mkdirSync(cookiesDir, { recursive: true });
+                console.warn("⚠️ cookies directory created at", cookiesDir);
             }
 
-            const parts = line.split("\t");
-            if (parts.length < 7) continue;
+            const files = fs.readdirSync(cookiesDir).filter(f => f.endsWith(".txt"));
+            this.sessions = [];
 
-            const name = parts[5];
-            const value = parts[6];
-
-            if (name && value) {
-                cookies.push(`${name}=${value}`);
+            for (const file of files) {
+                const filePath = path.join(cookiesDir, file);
+                const cookieString = this.parseNetscapeCookies(filePath);
+                if (cookieString) {
+                    const csrfMatch = cookieString.match(/csrftoken=([^;]+)/);
+                    this.sessions.push({
+                        id: file,
+                        cookie: cookieString,
+                        csrf: csrfMatch ? csrfMatch[1] : "",
+                        fails: 0
+                    });
+                }
             }
-        }
 
-        return cookies.join("; ");
-    } catch (err) {
-        console.error("❌ Error loading cookies:", err.message);
-        return "";
+            if (this.sessions.length > 0) {
+                console.log(`✅ Loaded ${this.sessions.length} Instagram sessions`);
+            } else {
+                console.warn("⚠️ No cookies found in backend/cookies/ - requests will likely fail.");
+            }
+        } catch (err) {
+            console.error("❌ Error loading sessions:", err.message);
+        }
+    }
+
+    parseNetscapeCookies(filePath) {
+        try {
+            const lines = fs.readFileSync(filePath, "utf8").split(/\r?\n/);
+            const cookies = [];
+            for (let line of lines) {
+                line = line.trim();
+                if (!line || line.startsWith("# ")) continue;
+                if (line.startsWith("#HttpOnly_")) line = line.replace("#HttpOnly_", "");
+
+                const parts = line.split("\t");
+                if (parts.length < 7) continue;
+
+                const name = parts[5];
+                const value = parts[6];
+                if (name && value) cookies.push(`${name}=${value}`);
+            }
+            return cookies.join("; ");
+        } catch (err) {
+            return null;
+        }
+    }
+
+    getNextSession() {
+        if (this.sessions.length === 0) return null;
+        const session = this.sessions[this.currentIndex];
+        this.currentIndex = (this.currentIndex + 1) % this.sessions.length;
+        return session;
+    }
+
+    getHeaders(session) {
+        if (!session) return null;
+        return {
+            mobile: {
+                "User-Agent": "Instagram 269.0.0.18.75 Android (30/11; 420dpi; 1080x2340; samsung; SM-G991B; o1s; exynos2100; en_US)",
+                "X-IG-App-ID": "936619743392459",
+                "Cookie": session.cookie,
+                "Accept": "*/*",
+                "X-CSRFToken": session.csrf
+            },
+            web: {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+                "Cookie": session.cookie,
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+                "Accept-Language": "en-US,en;q=0.9",
+                "Sec-Fetch-Mode": "navigate",
+                "Sec-Fetch-Dest": "document",
+                "Upgrade-Insecure-Requests": "1"
+            }
+        };
     }
 }
 
-const COOKIE = loadCookies();
-const csrfMatch = COOKIE.match(/csrftoken=([^;]+)/);
-const CSRF_TOKEN = csrfMatch ? csrfMatch[1] : "";
-
-const mobileHeaders = {
-    "User-Agent":
-        "Instagram 269.0.0.18.75 Android (30/11; 420dpi; 1080x2340; samsung; SM-G991B; o1s; exynos2100; en_US)",
-    "X-IG-App-ID": "936619743392459",
-    "Cookie": COOKIE,
-    "Accept": "*/*",
-    "X-CSRFToken": CSRF_TOKEN
-};
-
-const webHeaders = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-    "Cookie": COOKIE,
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Sec-Fetch-Mode": "navigate",
-    "Sec-Fetch-Dest": "document",
-    "Upgrade-Insecure-Requests": "1"
-};
+const cookieMgr = new CookieManager();
 
 // 0️⃣ Algorithmic Shortcode -> Media ID
 function getMediaId(shortcode) {
@@ -80,23 +114,39 @@ function getMediaId(shortcode) {
     return id.toString();
 }
 
-// Helper for retrying requests with exponential backoff
-async function withRetry(fn, maxRetries = 3, initialDelay = 1000) {
+// Helper for retrying requests with session rotation
+async function withSessionRetry(fn, maxRetries = 3) {
     let lastError;
-    for (let i = 0; i < maxRetries; i++) {
+    // We try up to sessions.length or maxRetries, whichever is higher
+    const attempts = Math.max(maxRetries, cookieMgr.sessions.length);
+
+    for (let i = 0; i < attempts; i++) {
+        const session = cookieMgr.getNextSession();
+        if (!session) {
+            throw { code: "NO_COOKIES", message: "No Instagram cookies available" };
+        }
+
+        const headers = cookieMgr.getHeaders(session);
+
         try {
-            return await fn();
+            return await fn(headers);
         } catch (err) {
             lastError = err;
             const status = err.response?.status;
 
-            // Don't retry on 404 (Not Found) or 400 (Bad Request)
-            if (status === 404 || status === 400) throw err;
+            // Don't retry on 404 (Not Found)
+            if (status === 404) throw err;
 
-            // Only retry on rate limits (429) or server errors (5xx) or timeouts
-            if (status === 429 || (status >= 500 && status <= 599) || err.code === 'ECONNABORTED' || err.code === 'ETIMEDOUT') {
-                const delay = initialDelay * Math.pow(2, i);
-                console.warn(`⚠️ Request failed (Status: ${status || err.code}). Retrying in ${delay}ms... (Attempt ${i + 1}/${maxRetries})`);
+            // If it's a cookie issue (400, 401, 403) or rate limit (429), we rotate and try again immediately
+            if (status === 400 || status === 401 || status === 403 || status === 429) {
+                console.warn(`⚠️ Session ${session.id} failed (Status: ${status}). Rotating... (Attempt ${i + 1}/${attempts})`);
+                continue;
+            }
+
+            // For other errors (5xx, timeouts), we wait a bit before retrying with next session
+            if ((status >= 500 && status <= 599) || err.code === 'ECONNABORTED' || err.code === 'ETIMEDOUT') {
+                const delay = 1000 * Math.pow(2, i % 3);
+                console.warn(`⚠️ Request failed (${status || err.code}). Retrying in ${delay}ms with next session...`);
                 await new Promise(resolve => setTimeout(resolve, delay));
                 continue;
             }
@@ -111,31 +161,55 @@ export async function fetchMediaByShortcode(shortcode) {
         const mediaId = getMediaId(shortcode);
         const apiUrl = `https://i.instagram.com/api/v1/media/${mediaId}/info/`;
 
-        const res = await withRetry(() =>
-            axios.get(apiUrl, { headers: mobileHeaders, timeout: 15000 })
+        console.log(`📡 Fetching Media Info: ${shortcode} (ID: ${mediaId})`);
+
+        const res = await withSessionRetry((headers) =>
+            axios.get(apiUrl, { headers: headers.mobile, timeout: 15000 })
         );
 
         if (!res.data?.items?.[0]) {
+            console.error("❌ Instagram API returned empty items list");
             throw new Error("API_BLOCKED");
         }
 
         return res.data.items[0];
     } catch (err) {
-        if (err.message === "MEDIA_NOT_FOUND") {
-            throw { code: "MEDIA_NOT_FOUND", message: "This post might be deleted, private, or archived" };
-        }
-        if (err.message === "API_BLOCKED") {
-            throw { code: "API_BLOCKED", message: "Instagram API blocked - try again later or check cookies" };
-        }
         const status = err.response?.status;
+        const body = err.response?.data;
+
+        console.error(`❌ Mobile API Fetch Failed | Status: ${status} | Message: ${err.message}`);
+        if (body) console.error(`❌ Response Body:`, JSON.stringify(body).slice(0, 300));
+
+        // Fallback to Web API if mobile fails
+        if (status !== 404) {
+            console.log(`🔄 Attempting Web API Fallback for: ${shortcode}...`);
+            try {
+                const webApiUrl = `https://www.instagram.com/p/${shortcode}/?__a=1&__d=dis`;
+                const webRes = await withSessionRetry((headers) =>
+                    axios.get(webApiUrl, { headers: headers.web, timeout: 10000 })
+                );
+                const item = webRes.data?.items?.[0] || webRes.data?.graphql?.shortcode_media;
+                if (item) {
+                    console.log("✅ Web API Success!");
+                    return item;
+                }
+            } catch (webErr) {
+                console.error("❌ Web API Fallback failed:", webErr.message);
+                if (webErr.response?.data) console.error("❌ Web API Body:", JSON.stringify(webErr.response.data).slice(0, 200));
+            }
+        }
+
+        if (err.message === "API_BLOCKED") {
+            throw { code: "API_BLOCKED", message: "Instagram API blocked - check cookies" };
+        }
         if (status === 404) {
             throw { code: "NOT_FOUND", message: "Post not found or has been deleted" };
         }
         if (status === 429) {
-            throw { code: "RATE_LIMIT", message: "Instagram rate limit reached - try again later" };
+            throw { code: "RATE_LIMIT", message: "Instagram rate limit reached" };
         }
-        if (err.code === "ECONNREFUSED" || err.code === "ECONNABORTED") {
-            throw { code: "NETWORK", message: "Network error or timeout - check your connection" };
+        if (status === 400) {
+            throw { code: "UNKNOWN", message: `Instagram rejected the request (400). Cookies might be invalid.` };
         }
         throw { code: "UNKNOWN", message: err.message || "Failed to fetch media" };
     }
@@ -150,8 +224,8 @@ export async function fetchStoryByUrl(storyUrl) {
             const mediaId = idMatch[1];
             try {
                 const apiUrl = `https://i.instagram.com/api/v1/media/${mediaId}/info/`;
-                const res = await withRetry(() =>
-                    axios.get(apiUrl, { headers: mobileHeaders, timeout: 15000 })
+                const res = await withSessionRetry((headers) =>
+                    axios.get(apiUrl, { headers: headers.mobile, timeout: 15000 })
                 );
                 const item = res.data?.items?.[0];
                 if (item) {
@@ -172,7 +246,9 @@ export async function fetchStoryByUrl(storyUrl) {
         }
 
         // Fallback: fetch the public story page HTML and try to extract urls
-        const html = await axios.get(storyUrl, { headers: webHeaders, timeout: 10000 });
+        const html = await withSessionRetry((headers) =>
+            axios.get(storyUrl, { headers: headers.web, timeout: 10000 })
+        );
         const data = html.data || "";
 
         // try several regexes for video URL
@@ -230,10 +306,10 @@ export async function fetchProfileByUrl(profileUrl) {
         // Try 1: Web Profile Info API (Needs strict headers)
         try {
             const apiUrl = `https://www.instagram.com/api/v1/users/web_profile_info/?username=${username}`;
-            const res = await withRetry(() =>
+            const res = await withSessionRetry((headers) =>
                 axios.get(apiUrl, {
                     headers: {
-                        ...webHeaders,
+                        ...headers.web,
                         "X-IG-App-ID": "936619743392459",
                         "X-Requested-With": "XMLHttpRequest",
                         "Referer": `https://www.instagram.com/${username}/`
@@ -258,10 +334,12 @@ export async function fetchProfileByUrl(profileUrl) {
         }
 
         // Try 2: Scraping HTML (Fallback)
-        const htmlRes = await axios.get(`https://www.instagram.com/${username}/`, {
-            headers: webHeaders,
-            timeout: 10000
-        });
+        const htmlRes = await withSessionRetry((headers) =>
+            axios.get(`https://www.instagram.com/${username}/`, {
+                headers: headers.web,
+                timeout: 10000
+            })
+        );
 
         const html = htmlRes.data;
 

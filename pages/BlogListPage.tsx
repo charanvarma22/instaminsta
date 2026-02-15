@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { API_BASE_URL } from '../constants';
+import { WORDPRESS_API_URL } from '../constants';
 import SEO from '../components/SEO';
 
 interface BlogPost {
-  blog_id: number;
+  id: number;
   title: string;
   slug: string;
   excerpt: string;
@@ -20,9 +20,20 @@ const BlogListPage: React.FC = () => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/api/blog/posts`);
-        if (response.data.success) {
-          setPosts(response.data.data);
+        const response = await axios.get(`${WORDPRESS_API_URL}/posts?_embed&per_page=20`);
+        if (response.data && response.data.length > 0) {
+          const mappedPosts = response.data.map((post: any) => ({
+            id: post.id,
+            title: post.title.rendered,
+            slug: post.slug,
+            // Strip HTML tags from excerpt
+            excerpt: post.excerpt.rendered.replace(/<[^>]+>/g, '').substring(0, 150) + '...',
+            category: 'Strategy', // Default category for now
+            published_at: post.date
+          }));
+          setPosts(mappedPosts);
+        } else {
+          setPosts([]);
         }
       } catch (error) {
         console.error('Error fetching blogs:', error);

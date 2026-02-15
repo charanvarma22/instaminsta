@@ -101,6 +101,8 @@ app.post("/api/download", async (req, res) => {
     }
 });
 
+const handleError = resolverModule.handleError || resolverModule.default?.handleError;
+
 // Preview endpoint
 app.post("/api/preview", async (req, res) => {
     try {
@@ -109,30 +111,22 @@ app.post("/api/preview", async (req, res) => {
 
         // 1. Stories
         if (url.includes("/stories/")) {
-            try {
-                const story = await fetchStoryByUrl(url);
-                return res.json({
-                    type: story.type || "image",
-                    items: [{ id: 0, type: story.type || "image", thumbnail: story.thumbnail || story.url, mediaUrl: story.url, shortcode: null }],
-                    shortcode: null
-                });
-            } catch (err) {
-                return res.status(500).json({ error: "Story fetch failed" });
-            }
+            const story = await fetchStoryByUrl(url);
+            return res.json({
+                type: story.type || "image",
+                items: [{ id: 0, type: story.type || "image", thumbnail: story.thumbnail || story.url, mediaUrl: story.url, shortcode: null }],
+                shortcode: null
+            });
         }
 
         // 2. Profile
         if (url.match(/instagram\.com\/(?!p\/|reel\/|tv\/|stories\/)([a-zA-Z0-9_\.]+)/)) {
-            try {
-                const profile = await fetchProfileByUrl(url);
-                return res.json({
-                    type: "image",
-                    items: [{ id: 0, type: "image", thumbnail: profile.thumbnail, mediaUrl: profile.url, shortcode: null, username: profile.username }],
-                    shortcode: null
-                });
-            } catch (err) {
-                return res.status(500).json({ error: "Profile fetch failed" });
-            }
+            const profile = await fetchProfileByUrl(url);
+            return res.json({
+                type: "image",
+                items: [{ id: 0, type: "image", thumbnail: profile.thumbnail, mediaUrl: profile.url, shortcode: null, username: profile.username }],
+                shortcode: null
+            });
         }
 
         // 3. Regular Posts
@@ -174,7 +168,8 @@ app.post("/api/preview", async (req, res) => {
         return res.status(404).json({ error: "Media not found" });
     } catch (err) {
         console.error("Preview error:", err);
-        res.status(500).json({ error: "Failed to fetch media" });
+        if (handleError) return handleError(err, res);
+        res.status(500).json({ error: err.message || "Failed to fetch media" });
     }
 });
 

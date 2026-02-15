@@ -19,22 +19,24 @@ async function handleStory(url, res) {
     try {
         const story = await fetchStoryByUrl(url);
 
-        if (story.type === "video") {
+        if (story.type === "video" || story.video_url) {
             res.setHeader("Content-Type", "video/mp4");
             res.setHeader("Content-Disposition", "attachment; filename=story.mp4");
 
-            const stream = await axios.get(story.url, { responseType: "stream" });
+            const videoUrl = story.url || story.video_url;
+            const stream = await axios.get(videoUrl, { responseType: "stream" });
             return stream.data.on('error', (err) => {
                 console.error("Stream error:", err);
                 if (!res.headersSent) res.status(500).send("Stream error");
             }).pipe(res);
         }
 
-        if (story.type === "image") {
+        if (story.type === "image" || story.display_url) {
             res.setHeader("Content-Type", "image/jpeg");
             res.setHeader("Content-Disposition", "attachment; filename=story.jpg");
 
-            const stream = await axios.get(story.url, { responseType: "stream" });
+            const imgUrl = story.url || story.display_url;
+            const stream = await axios.get(imgUrl, { responseType: "stream" });
             return stream.data.on('error', (err) => {
                 console.error("Stream error:", err);
                 if (!res.headersSent) res.status(500).send("Stream error");
@@ -57,7 +59,7 @@ async function handleReel(url, res) {
     const shortcode = extractShortcode(url);
     const media = await fetchMediaByShortcode(shortcode);
 
-    const videoUrl = media.video_versions?.[0]?.url;
+    const videoUrl = media.video_versions?.[0]?.url || media.video_url;
     if (!videoUrl) throw new Error("Reel video not found");
 
     res.setHeader("Content-Type", "video/mp4");
@@ -107,9 +109,8 @@ async function handlePost(url, res, itemIndex) {
 
 async function streamSingle(media, res) {
     /* VIDEO POST */
-    if (media.video_versions) {
-        const videoUrl = media.video_versions[0].url;
-
+    const videoUrl = media.video_versions?.[0]?.url || media.video_url;
+    if (videoUrl) {
         res.setHeader("Content-Type", "video/mp4");
         res.setHeader("Content-Disposition", "attachment; filename=video.mp4");
 
@@ -121,9 +122,8 @@ async function streamSingle(media, res) {
     }
 
     /* IMAGE POST */
-    if (media.image_versions2) {
-        const imgUrl = media.image_versions2.candidates[0].url;
-
+    const imgUrl = media.image_versions2?.candidates?.[0]?.url || media.display_url;
+    if (imgUrl) {
         res.setHeader("Content-Type", "image/jpeg");
         res.setHeader("Content-Disposition", "attachment; filename=image.jpg");
 
@@ -138,7 +138,7 @@ async function streamSingle(media, res) {
 }
 
 // Error handler with user-friendly messages
-function handleError(err, res) {
+export function handleError(err, res) {
     const errorMap = {
         "MEDIA_NOT_FOUND": { status: 404, message: "Post not found - it might be deleted or private" },
         "STORY_NOT_FOUND": { status: 404, message: "Story expired or deleted (stories disappear after 24h)" },

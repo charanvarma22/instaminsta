@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
-import { API_BASE_URL } from '../constants';
+import { WORDPRESS_API_URL } from '../constants';
 import SEO from '../components/SEO';
 
 interface BlogPost {
@@ -22,9 +22,20 @@ const BlogPage: React.FC = () => {
     useEffect(() => {
         const fetchPost = async () => {
             try {
-                const response = await axios.get(`${API_BASE_URL}/api/blog/posts/${slug}`);
-                if (response.data.success) {
-                    setPost(response.data.data);
+                const response = await axios.get(`${WORDPRESS_API_URL}/posts?slug=${slug}`);
+                if (response.data && response.data.length > 0) {
+                    const wpPost = response.data[0];
+                    setPost({
+                        title: wpPost.title.rendered,
+                        slug: wpPost.slug,
+                        html_content: wpPost.content.rendered,
+                        meta_title: wpPost.title.rendered, // Use Yoast field if available later
+                        meta_description: wpPost.excerpt.rendered.replace(/<[^>]+>/g, '').substring(0, 160),
+                        category: 'Strategy', // Default
+                        published_at: wpPost.date
+                    });
+                } else {
+                    setPost(null);
                 }
             } catch (error) {
                 console.error('Error fetching blog post:', error);

@@ -7,6 +7,8 @@ export const API_BASE_URL = window.location.hostname === 'localhost'
   ? 'http://localhost:3004'
   : '';
 
+export const WORDPRESS_API_URL = 'https://instaminsta.com/blog/wp-json/wp/v2';
+
 export const NAV_LINKS: NavLink[] = [
   { name: 'Instagram Reels', path: '/reels', type: 'reels' },
   { name: 'Instagram Video', path: '/instagram-video-downloader', type: 'video' },

@@ -15,27 +15,27 @@ interface Props {
 const ToolPage: React.FC<Props> = ({ type }) => {
   const content = {
     reels: {
-      title: "Reels",
+      title: "Instagram Reels Downloader",
       desc: "Download high-quality Instagram Reels (HD) instantly without watermarks. The ultimate free tool for saving viral Reels to your mobile gallery or PC in 2026."
     },
     video: {
-      title: "Video",
+      title: "Instagram Video Downloader",
       desc: "Save any Instagram video to your phone or computer in original MP4 format. High-speed, secure, and completely free online video saver."
     },
     photo: {
-      title: "Photo",
+      title: "Instagram Photo Downloader",
       desc: "Download high-resolution Instagram photos, profile pictures, and carousels. Save the original JPEG quality with just one click for free."
     },
     stories: {
-      title: "Story",
+      title: "Instagram Story Saver & Downloader",
       desc: "Download Instagram Stories and Highlights anonymously in HD. Save expiring content before it disappears forever from the platform in 2026."
     },
     igtv: {
-      title: "IGTV",
+      title: "Instagram IGTV Downloader",
       desc: "The professional tool for downloading long-form IGTV videos. Save high-definition content for offline study, travel, or entertainment."
     },
     all: {
-      title: "Instagram",
+      title: "Instagram Downloader Online",
       desc: "The most comprehensive online tool to download any media from Instagram for free. Save Reels, Videos, Photos, and Stories today."
     }
   };

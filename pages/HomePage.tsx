@@ -10,7 +10,7 @@ const HomePage: React.FC = () => {
   return (
     <div className="bg-slate-950">
       <SEO
-        title="Free Instagram Reels & Video Downloader"
+        title="Instagram Downloader — Download Reels, Videos & Stories"
         description="The best 2026 Instagram downloader. Save Reels, Videos, Photos, and Stories in HD. No login required, fast and 100% free."
         canonical="/"
       />
@@ -37,10 +37,10 @@ const HomePage: React.FC = () => {
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-20">
             <h2 className="text-4xl md:text-6xl font-black mb-8 text-white leading-tight">
-              Comprehensive <span className="hero-text-gradient">Instagram Downloader</span> 2026
+              Best <span className="hero-text-gradient">Instagram Downloader</span> 2026
             </h2>
             <p className="text-slate-400 text-xl leading-relaxed max-w-4xl mx-auto font-medium">
-              instaminsta is engineered to be the most versatile tool in your social media arsenal. We don't just download; we provide a high-fidelity bridge to the Instagram CDN, ensuring you get the original quality every single time.
+              Instaminsta is the world's fastest <strong>Instagram video downloader</strong>. Engineered to be the most versatile tool in your social media arsenal, we provide a high-fidelity bridge to the Instagram CDN, ensuring you get the original quality every single time.
             </p>
           </div>
 
@@ -131,11 +131,11 @@ const HomePage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4">
           <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-pink-900/20 p-12 md:p-24 rounded-[4rem] border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-12 shadow-5xl">
             <div className="text-center md:text-left max-w-xl">
-              <h2 className="text-4xl md:text-6xl font-black text-white mb-6 leading-tight">Join the 2026 Content Revolution</h2>
-              <p className="text-slate-400 text-xl font-medium">Experience the fastest downloads on the web. No ads, no tracking, 100% free.</p>
+              <h2 className="text-4xl md:text-6xl font-black text-white mb-6 leading-tight">Start Your <span className="hero-text-gradient">Instagram Download</span></h2>
+              <p className="text-slate-400 text-xl font-medium">Experience the fastest <strong>IG downloader</strong> on the web. No ads, no tracking, 100% free.</p>
             </div>
             <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="bg-white text-slate-950 px-14 py-8 rounded-[2.5rem] font-black text-2xl hover:scale-105 transition-all shadow-3xl shadow-white/10 active:scale-95 whitespace-nowrap">
-              Download Now
+              Try It Free
             </button>
           </div>
         </div>

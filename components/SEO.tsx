@@ -8,8 +8,15 @@ interface SEOProps {
 
 const SEO: React.FC<SEOProps> = ({ title, description, canonical }) => {
     useEffect(() => {
-        // Update title
-        document.title = `${title} | instaminsta`;
+        // Update title - Ensure "Instagram Downloader" is always present for SEO weight
+        const suffix = "Instagram Downloader & Video Saver";
+        const cleanTitle = title.trim();
+
+        if (cleanTitle.toLowerCase().includes("downloader")) {
+            document.title = `${cleanTitle} | instaminsta`;
+        } else {
+            document.title = `${cleanTitle} - ${suffix} | instaminsta`;
+        }
 
         // Update description meta tag
         if (description) {

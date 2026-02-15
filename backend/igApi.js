@@ -159,16 +159,18 @@ async function withSessionRetry(fn, maxRetries = 3) {
 export function selectBestVideo(media) {
     if (!media || !media.video_versions) return null;
 
-    // Filter for combined MP4 versions (type 1 usually has audio)
-    const combinedVersions = media.video_versions.filter(v => v.type === 1);
+    // Filter for combined versions (usually type 1 or those with a lot of candidates)
+    // Instagram types: 1 = combined MP4, 101 = DASH (often silent)
+    const candidates = media.video_versions.sort((a, b) => (b.width * b.height) - (a.width * a.height));
 
-    if (combinedVersions.length > 0) {
-        // Return the highest resolution combined version
-        return combinedVersions.sort((a, b) => (b.width * b.height) - (a.width * a.height))[0].url;
-    }
+    // ⚠️ Strategy: Prefer type 1 (combined) first
+    const combined = candidates.filter(v => v.type === 1);
+    if (combined.length > 0) return combined[0].url;
 
-    // fallback to first version if no type 1 found
-    return media.video_versions[0].url;
+    // Fallback: If no type 1, but we have multiple candidates, 
+    // we take the one that ISN'T a dash stream if possible.
+    // However, if all are listed as type 0 or 101, we just take the highest res.
+    return candidates[0].url;
 }
 
 export async function fetchMediaByShortcode(shortcode) {
@@ -178,20 +180,60 @@ export async function fetchMediaByShortcode(shortcode) {
 
         console.log(`📡 Fetching Media Info: ${shortcode} (ID: ${mediaId})`);
 
-        const res = await withSessionRetry((headers) =>
-            axios.get(apiUrl, { headers: headers.mobile, timeout: 15000 })
-        );
+        let item;
+        try {
+            const res = await withSessionRetry((headers) =>
+                axios.get(apiUrl, { headers: headers.mobile, timeout: 15000 })
+            );
 
-        if (!res.data?.items?.[0]) {
-            console.error("❌ Instagram API returned empty items list");
-            throw new Error("API_BLOCKED");
+            if (res.data?.items?.[0]) {
+                item = res.data.items[0];
+                item.source = "mobile";
+
+                // If the mobile result doesn't have a combined MP4 (type 1), 
+                // it might be a silent DASH stream. We'll flag it for fallback.
+                const hasCombined = item.video_versions?.some(v => v.type === 1);
+                if (!hasCombined && item.video_versions?.length > 0) {
+                    console.log("⚠️ Mobile API returned potentially silent DASH stream. Will try Web API fallback for audio...");
+                } else {
+                    item.best_video_url = selectBestVideo(item);
+                    return item;
+                }
+            }
+        } catch (mobileErr) {
+            console.error(`❌ Mobile API Failed: ${mobileErr.message}`);
         }
 
-        const item = res.data.items[0];
-        // Add extracted video URL for easy access
-        item.best_video_url = selectBestVideo(item);
+        // Proactive Fallback to Web API for better audio reliability
+        console.log(`🔄 Attempting Web API for: ${shortcode}...`);
+        try {
+            const webApiUrl = `https://www.instagram.com/p/${shortcode}/?__a=1&__d=dis`;
+            const webRes = await withSessionRetry((headers) =>
+                axios.get(webApiUrl, { headers: headers.web, timeout: 10000 })
+            );
 
-        return item;
+            const webItem = webRes.data?.items?.[0] || webRes.data?.graphql?.shortcode_media;
+            if (webItem) {
+                console.log("✅ Web API Success!");
+                webItem.source = "web";
+                webItem.best_video_url = selectBestVideo(webItem) || webItem.video_url;
+
+                // Merge info if we had a partial mobile result
+                if (item) {
+                    return { ...item, ...webItem, best_video_url: webItem.best_video_url || item.best_video_url };
+                }
+                return webItem;
+            }
+        } catch (webErr) {
+            console.error("❌ Web API failed:", webErr.message);
+        }
+
+        if (item) {
+            item.best_video_url = selectBestVideo(item);
+            return item;
+        }
+
+        throw { code: "UNKNOWN", message: "Failed to fetch media from all sources" };
     } catch (err) {
         const status = err.response?.status;
         const body = err.response?.data;

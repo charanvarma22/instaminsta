@@ -142,12 +142,13 @@ export function handleError(err, res) {
     const errorMap = {
         "MEDIA_NOT_FOUND": { status: 404, message: "Post not found - it might be deleted or private" },
         "STORY_NOT_FOUND": { status: 404, message: "Story expired or deleted (stories disappear after 24h)" },
-        "API_BLOCKED": { status: 429, message: "Instagram is blocking requests - try again in a few minutes" },
+        "API_BLOCKED": { status: 429, message: "All Instagram sessions are temporarily blocked or invalid" },
+        "NO_COOKIES": { status: 503, message: "No Instagram cookies found. Please add cookies to backend/cookies/ folder." },
         "NOT_FOUND": { status: 404, message: "Content not found" },
         "NO_VIDEO": { status: 400, message: "Video not found in this IGTV" },
         "INVALID_URL": { status: 400, message: "Invalid Instagram URL format" },
         "NETWORK": { status: 503, message: "Network error - please check your connection" },
-        "UNKNOWN": { status: 500, message: "Unknown error occurred" }
+        "UNKNOWN": { status: 500, message: "Unknown error occurred - please try another link" }
     };
 
     const errorCode = err.code || "UNKNOWN";

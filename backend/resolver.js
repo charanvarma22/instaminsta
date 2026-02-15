@@ -59,7 +59,7 @@ async function handleReel(url, res) {
     const shortcode = extractShortcode(url);
     const media = await fetchMediaByShortcode(shortcode);
 
-    const videoUrl = media.video_versions?.[0]?.url || media.video_url;
+    const videoUrl = media.best_video_url || media.video_versions?.[0]?.url || media.video_url;
     if (!videoUrl) throw new Error("Reel video not found");
 
     res.setHeader("Content-Type", "video/mp4");
@@ -99,6 +99,13 @@ async function handlePost(url, res, itemIndex) {
         if (itemIndex !== undefined && itemIndex !== null) {
             const item = media.carousel_media[itemIndex];
             if (!item) throw new Error("Carousel item not found");
+
+            // For carousel items, we might need to select best video too
+            if (item.video_versions) {
+                // selectBestVideo is not exported yet or we need it here
+                const { selectBestVideo } = await import("./igApi.js");
+                item.best_video_url = selectBestVideo(item);
+            }
             return streamSingle(item, res);
         }
         return streamZip(media.carousel_media, res);
@@ -109,7 +116,7 @@ async function handlePost(url, res, itemIndex) {
 
 async function streamSingle(media, res) {
     /* VIDEO POST */
-    const videoUrl = media.video_versions?.[0]?.url || media.video_url;
+    const videoUrl = media.best_video_url || media.video_versions?.[0]?.url || media.video_url;
     if (videoUrl) {
         res.setHeader("Content-Type", "video/mp4");
         res.setHeader("Content-Disposition", "attachment; filename=video.mp4");

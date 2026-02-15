@@ -156,6 +156,21 @@ async function withSessionRetry(fn, maxRetries = 3) {
     throw lastError;
 }
 
+export function selectBestVideo(media) {
+    if (!media || !media.video_versions) return null;
+
+    // Filter for combined MP4 versions (type 1 usually has audio)
+    const combinedVersions = media.video_versions.filter(v => v.type === 1);
+
+    if (combinedVersions.length > 0) {
+        // Return the highest resolution combined version
+        return combinedVersions.sort((a, b) => (b.width * b.height) - (a.width * a.height))[0].url;
+    }
+
+    // fallback to first version if no type 1 found
+    return media.video_versions[0].url;
+}
+
 export async function fetchMediaByShortcode(shortcode) {
     try {
         const mediaId = getMediaId(shortcode);
@@ -172,7 +187,11 @@ export async function fetchMediaByShortcode(shortcode) {
             throw new Error("API_BLOCKED");
         }
 
-        return res.data.items[0];
+        const item = res.data.items[0];
+        // Add extracted video URL for easy access
+        item.best_video_url = selectBestVideo(item);
+
+        return item;
     } catch (err) {
         const status = err.response?.status;
         const body = err.response?.data;
@@ -229,8 +248,8 @@ export async function fetchStoryByUrl(storyUrl) {
                 );
                 const item = res.data?.items?.[0];
                 if (item) {
-                    if (item.video_versions && item.video_versions.length > 0) {
-                        const videoUrl = item.video_versions[0].url;
+                    const videoUrl = selectBestVideo(item);
+                    if (videoUrl) {
                         const thumbnail = item.image_versions2?.candidates?.[0]?.url || null;
                         return { type: "video", url: videoUrl, thumbnail };
                     }

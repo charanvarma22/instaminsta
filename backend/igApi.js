@@ -159,18 +159,27 @@ async function withSessionRetry(fn, maxRetries = 3) {
 export function selectBestVideo(media) {
     if (!media || !media.video_versions) return null;
 
-    // Filter for combined versions (usually type 1 or those with a lot of candidates)
-    // Instagram types: 1 = combined MP4, 101 = DASH (often silent)
-    const candidates = media.video_versions.sort((a, b) => (b.width * b.height) - (a.width * a.height));
+    const candidates = media.video_versions;
 
-    // ⚠️ Strategy: Prefer type 1 (combined) first
+    // 🏆 Strategy 1: Look for combined MP4s (Type 1)
+    // These usually have audio and video baked in.
     const combined = candidates.filter(v => v.type === 1);
-    if (combined.length > 0) return combined[0].url;
+    if (combined.length > 0) {
+        // Return the highest resolution among the combined ones
+        return combined.sort((a, b) => (b.width * b.height) - (a.width * a.height))[0].url;
+    }
 
-    // Fallback: If no type 1, but we have multiple candidates, 
-    // we take the one that ISN'T a dash stream if possible.
-    // However, if all are listed as type 0 or 101, we just take the highest res.
-    return candidates[0].url;
+    // 🥈 Strategy 2: If no Type 1, look for Type 101/102 (DASH)
+    // Note: Type 101 is usually Video Only, 102 is Audio Only.
+    // If we only have these, we'll need to flag them later for merging.
+    // For now, let's pick the highest resolution one that isn't explicitly silent if possible.
+    const nonDASH = candidates.filter(v => v.type !== 101);
+    if (nonDASH.length > 0) {
+        return nonDASH.sort((a, b) => (b.width * b.height) - (a.width * a.height))[0].url;
+    }
+
+    // Final fallback: Highest resolution possible
+    return candidates.sort((a, b) => (b.width * b.height) - (a.width * a.height))[0].url;
 }
 
 export async function fetchMediaByShortcode(shortcode) {

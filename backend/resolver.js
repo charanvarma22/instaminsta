@@ -62,6 +62,10 @@ async function handleReel(url, res) {
     const videoUrl = media.best_video_url || media.video_versions?.[0]?.url || media.video_url;
     if (!videoUrl) throw new Error("Reel video not found");
 
+    // 🔍 Audio Check: If the URL contains "dash" or is type 101, it's likely silent.
+    // However, our new selectBestVideo usually avoids these.
+    // Short-term fix: Just pipe the best available.
+
     res.setHeader("Content-Type", "video/mp4");
     res.setHeader("Content-Disposition", "attachment; filename=reel.mp4");
 

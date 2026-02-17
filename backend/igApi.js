@@ -71,10 +71,24 @@ class CookieManager {
     }
 
     getNextSession() {
-        if (this.sessions.length === 0) return null;
-        const session = this.sessions[this.currentIndex];
-        this.currentIndex = (this.currentIndex + 1) % this.sessions.length;
+        const activeSessions = this.sessions.filter(s => !s.benched);
+        const pool = activeSessions.length > 0 ? activeSessions : this.sessions;
+
+        if (pool.length === 0) return null;
+        const session = pool[this.currentIndex % pool.length];
+        this.currentIndex = (this.currentIndex + 1) % pool.length;
         return session;
+    }
+
+    flagSession(sessionId, type = "fail") {
+        const session = this.sessions.find(s => s.id === sessionId);
+        if (session) {
+            session.fails = (session.fails || 0) + 1;
+            if (type === "challenge" || session.fails >= 5) {
+                console.error(`🚨 Benching session ${sessionId} due to ${type}`);
+                session.benched = true;
+            }
+        }
     }
 
     getHeaders(session) {
@@ -85,7 +99,9 @@ class CookieManager {
                 "X-IG-App-ID": "936619743392459",
                 "Cookie": session.cookie,
                 "Accept": "*/*",
-                "X-CSRFToken": session.csrf
+                "X-CSRFToken": session.csrf,
+                "X-IG-WWW-Claim": "0",
+                "X-ASBD-ID": "198387"
             },
             web: {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
@@ -117,7 +133,6 @@ function getMediaId(shortcode) {
 // Helper for retrying requests with session rotation
 async function withSessionRetry(fn, maxRetries = 3) {
     let lastError;
-    // We try up to sessions.length or maxRetries, whichever is higher
     const attempts = Math.max(maxRetries, cookieMgr.sessions.length);
 
     for (let i = 0; i < attempts; i++) {
@@ -129,24 +144,40 @@ async function withSessionRetry(fn, maxRetries = 3) {
         const headers = cookieMgr.getHeaders(session);
 
         try {
-            return await fn(headers);
-        } catch (err) {
-            lastError = err;
-            const status = err.response?.status;
+            const result = await fn(headers);
 
-            // Don't retry on 404 (Not Found)
-            if (status === 404) throw err;
+            // CRITICAL: Check for "soft blocks" in response body
+            const responseData = JSON.stringify(result.data || "").toLowerCase();
+            if (responseData.includes("checkpoint_required") ||
+                responseData.includes("challenge_required") ||
+                responseData.includes("automated behavior") ||
+                responseData.includes("login_required")) {
 
-            // If it's a cookie issue (400, 401, 403) or rate limit (429), we rotate and try again immediately
-            if (status === 400 || status === 401 || status === 403 || status === 429) {
-                console.warn(`⚠️ Session ${session.id} failed (Status: ${status}). Rotating... (Attempt ${i + 1}/${attempts})`);
+                console.warn(`🛑 Challenge detected in session ${session.id}. Benching account.`);
+                cookieMgr.flagSession(session.id, "challenge");
                 continue;
             }
 
-            // For other errors (5xx, timeouts), we wait a bit before retrying with next session
+            return result;
+        } catch (err) {
+            lastError = err;
+            const status = err.response?.status;
+            const body = JSON.stringify(err.response?.data || "").toLowerCase();
+
+            if (status === 401 || status === 403 || body.includes("challenge") || body.includes("behavior")) {
+                console.warn(`⚠️ Session ${session.id} failed/blocked (Status: ${status}). Rotating...`);
+                cookieMgr.flagSession(session.id, body.includes("challenge") ? "challenge" : "fail");
+                continue;
+            }
+
+            if (status === 404) throw err;
+            if (status === 429) {
+                console.warn(`⏳ Rate limit on session ${session.id}. Rotating...`);
+                continue;
+            }
+
             if ((status >= 500 && status <= 599) || err.code === 'ECONNABORTED' || err.code === 'ETIMEDOUT') {
-                const delay = 1000 * Math.pow(2, i % 3);
-                console.warn(`⚠️ Request failed (${status || err.code}). Retrying in ${delay}ms with next session...`);
+                const delay = 500 * (i + 1);
                 await new Promise(resolve => setTimeout(resolve, delay));
                 continue;
             }
@@ -159,18 +190,29 @@ async function withSessionRetry(fn, maxRetries = 3) {
 export function selectBestVideo(media) {
     if (!media || !media.video_versions) return null;
 
-    // Filter for combined versions (usually type 1 or those with a lot of candidates)
-    // Instagram types: 1 = combined MP4, 101 = DASH (often silent)
-    const candidates = media.video_versions.sort((a, b) => (b.width * b.height) - (a.width * a.height));
+    // Sort by resolution (highest first)
+    const sorted = [...media.video_versions].sort((a, b) => (b.width * b.height) - (a.width * a.height));
 
-    // ⚠️ Strategy: Prefer type 1 (combined) first
-    const combined = candidates.filter(v => v.type === 1);
-    if (combined.length > 0) return combined[0].url;
+    // compatibilityCheck prioritizing AVC (H.264)
+    const compatibilityCheck = (v) => {
+        const url = v.url.toLowerCase();
+        // AVC/H.264 is universally supported. HEVC/H.265 often errors on Windows Media Player without extensions.
+        const isHEVC = url.includes("hvc1") || url.includes("hev1") || url.includes("h265");
+        return !isHEVC ? 2 : 1;
+    };
 
-    // Fallback: If no type 1, but we have multiple candidates, 
-    // we take the one that ISN'T a dash stream if possible.
-    // However, if all are listed as type 0 or 101, we just take the highest res.
-    return candidates[0].url;
+    // Filter for highest resolution tier (within 10% of max resolution)
+    const highestRes = sorted[0].width * sorted[0].height;
+    const topCandidates = sorted.filter(v => (v.width * v.height) >= (highestRes * 0.9));
+
+    // Sort top candidates by compatibility then type
+    topCandidates.sort((a, b) => {
+        const scoreA = compatibilityCheck(a) + (a.type === 1 ? 1 : 0);
+        const scoreB = compatibilityCheck(b) + (b.type === 1 ? 1 : 0);
+        return scoreB - scoreA;
+    });
+
+    return topCandidates[0].url;
 }
 
 export async function fetchMediaByShortcode(shortcode) {
